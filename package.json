@@ -1,0 +1,35 @@
+{
+  "name": "electron-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev": "concurrently \"yarn renderer-dev\" \"wait-on http://localhost:5173 && yarn electron-dev\"",
+    "renderer-dev": "vite",
+    "electron-dev": "mode=dev electron .",
+    "renderer-build": "vite build",
+    "build": "yarn renderer-build",
+    "start": "mode=prod electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.0",
+    "autoprefixer": "^10.4.18",
+    "concurrently": "^8.2.2",
+    "postcss": "^8.4.35",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.6",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "electron": "^29.1.4",
+    "firebase-admin": "^13.2.0",
+    "react-router-dom": "^7.5.0"
+  }
+}
