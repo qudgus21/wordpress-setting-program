@@ -1,15 +1,15 @@
 // src/main/ipc/firebase.js
 const { ipcMain } = require("electron");
-const { registerLicense } = require("@/core/firebase");
+const { registerLicense, checkLicense } = require("@/core/firebase");
 
 // 라이센스 등록 핸들러
 ipcMain.handle("register-license", async (event, licenseKey) => {
   try {
-    const result = await registerLicense(licenseKey);
+    const license = await registerLicense(licenseKey);
     return {
       success: true,
       message: "라이센스가 성공적으로 등록되었습니다.",
-      data: result,
+      data: license,
     };
   } catch (error) {
     return {
@@ -22,10 +22,11 @@ ipcMain.handle("register-license", async (event, licenseKey) => {
 // 라이센스 상태 확인 핸들러
 ipcMain.handle("check-license", async () => {
   try {
-    // TODO: 로컬 저장소에서 라이센스 정보 확인
+    const license = await checkLicense();
     return {
       success: true,
-      isValid: true,
+      message: "라이센스가 유효합니다.",
+      data: license,
     };
   } catch (error) {
     return {

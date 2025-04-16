@@ -13,7 +13,9 @@ if (!admin.apps.length) {
 
 // 모듈 import
 const registerLicense = require("./registerLicense");
+const checkLicense = require("./checkLicense");
 
 module.exports = {
   registerLicense,
+  checkLicense,
 };

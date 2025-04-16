@@ -43,7 +43,13 @@ const registerLicense = async (licenseKey) => {
       registeredAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return { success: true, message: "라이센스가 성공적으로 등록되었습니다." };
+    // 기존 데이터에 업데이트된 필드를 추가하여 반환
+    return {
+      ...docData,
+      valid: true,
+      deviceId: deviceId,
+      registeredAt: new Date(),
+    };
   } catch (error) {
     console.error("라이센스 등록 에러:", error);
     throw error;
