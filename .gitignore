@@ -1,3 +1,6 @@
 .env.local
 .env.production
 node_modules
+serviceAccountKey.json
+config.json
+dist/

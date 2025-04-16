@@ -1,35 +1,64 @@
 {
   "name": "electron-app",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
-  "main": "src/main/main.js",
+  "main": "dist/main/main.js",
   "scripts": {
     "dev": "concurrently \"yarn renderer-dev\" \"wait-on http://localhost:5173 && yarn electron-dev\"",
     "renderer-dev": "vite",
-    "electron-dev": "mode=dev electron .",
+    "electron-dev": "mode=dev electron src/main/main.js",
+    "build": "yarn renderer-build && yarn electron-build && electron-builder",
     "renderer-build": "vite build",
-    "build": "yarn renderer-build",
-    "start": "mode=prod electron ."
+    "electron-build": "node build.js",
+    "start": "cross-env mode=prod electron ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.4.0",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "javascript-obfuscator": "^4.1.1",
     "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.1.6",
+    "vite": "^5.1.0",
     "wait-on": "^7.2.0"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
-    "electron": "^29.1.4",
-    "firebase-admin": "^13.2.0",
+    "electron-store": "^8.1.0",
+    "firebase-admin": "^11.11.1",
+    "module-alias": "^2.2.3",
+    "node-machine-id": "^1.1.12",
     "react-router-dom": "^7.5.0"
+  },
+  "build": {
+    "appId": "com.example.electron-app",
+    "productName": "MyElectronApp",
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "icon": "assets/icon.ico"
+  },
+  "_moduleAliases": {
+    "@": "src/main"
   }
 }
