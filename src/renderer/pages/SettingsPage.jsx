@@ -1,15 +1,53 @@
-import React, { useState } from "react";
-import useThemeStore from "../store/themeStore";
+import React, { useState, useEffect } from "react";
+import useThemeStore from "@/store/themeStore";
 
 const SettingsPage = () => {
   const [awsAccessKey, setAwsAccessKey] = useState("");
   const [awsSecretKey, setAwsSecretKey] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    // 컴포넌트 마운트 시 저장된 AWS 자격 증명 불러오기
+    window.aws.credentials
+      .get()
+      .then((result) => {
+        if (result.success && result.data) {
+          setAwsAccessKey(result.data.accessKeyId || "");
+          setAwsSecretKey(result.data.secretAccessKey || "");
+        }
+      })
+      .catch((err) => {
+        setError("자격 증명을 불러오는 중 오류가 발생했습니다.");
+        console.error(err);
+      });
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: AWS 자격 증명 저장 로직 추가
-    console.log("AWS 자격 증명 저장:", { awsAccessKey, awsSecretKey });
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const result = await window.aws.credentials.save({
+        accessKeyId: awsAccessKey,
+        secretAccessKey: awsSecretKey,
+      });
+
+      if (result.success) {
+        setSuccess(result.message);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("자격 증명을 저장하는 중 오류가 발생했습니다.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,6 +83,22 @@ const SettingsPage = () => {
                 AWS 자격 증명
               </h3>
               <div className="mt-4 space-y-4">
+                {error && (
+                  <div
+                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{error}</span>
+                  </div>
+                )}
+                {success && (
+                  <div
+                    className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative"
+                    role="alert"
+                  >
+                    <span className="block sm:inline">{success}</span>
+                  </div>
+                )}
                 <form onSubmit={handleSubmit}>
                   <div
                     className={`p-4 rounded-lg ${
@@ -70,6 +124,7 @@ const SettingsPage = () => {
                           : "bg-white border-gray-300 text-gray-900"
                       }`}
                       placeholder="AKIAXXXXXXXXXXXXXXXX"
+                      disabled={isLoading}
                     />
                   </div>
                   <div
@@ -96,13 +151,19 @@ const SettingsPage = () => {
                           : "bg-white border-gray-300 text-gray-900"
                       }`}
                       placeholder="••••••••••••••••••••••••••••••••"
+                      disabled={isLoading}
                     />
                   </div>
                   <button
                     type="submit"
-                    className="mt-4 w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    disabled={isLoading}
+                    className={`mt-4 w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
+                      isLoading
+                        ? "bg-indigo-400 cursor-not-allowed"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                   >
-                    AWS 자격 증명 저장
+                    {isLoading ? "저장 중..." : "AWS 자격 증명 저장"}
                   </button>
                 </form>
               </div>

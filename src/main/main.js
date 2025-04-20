@@ -5,6 +5,7 @@ const isDev = process.env.mode === "dev";
 
 // IPC 핸들러 등록
 require("./ipc/firebase");
+require("./ipc/aws");
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
