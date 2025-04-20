@@ -16,18 +16,14 @@ const DashboardPage = () => {
             {/* 투자 금액 카드 */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-medium text-gray-900">투자 금액</h3>
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                ₩50,000,000
-              </p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">₩50,000,000</p>
               <p className="mt-1 text-sm text-gray-500">총 투자 금액</p>
             </div>
 
             {/* 수익 금액 카드 */}
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-medium text-gray-900">수익 금액</h3>
-              <p className="mt-2 text-3xl font-bold text-green-600">
-                ₩6,250,000
-              </p>
+              <p className="mt-2 text-3xl font-bold text-green-600">₩6,250,000</p>
               <p className="mt-1 text-sm text-gray-500">총 수익 금액</p>
             </div>
           </div>

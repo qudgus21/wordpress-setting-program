@@ -1,40 +1,42 @@
-import { createHashRouter, redirect } from "react-router-dom";
-import LicenseInputPage from "./pages/LicenseInputPage";
-import MainLayout from "./components/layout/MainLayout";
-import DashboardPage from "./pages/DashboardPage";
-import SettingsPage from "./pages/SettingsPage";
-import HelpPage from "./pages/HelpPage";
+import { createHashRouter, redirect } from 'react-router-dom';
+import LicenseInputPage from '@/pages/LicenseInputPage';
+import DashboardPage from '@/pages/DashboardPage';
+import SettingsPage from '@/pages/SettingsPage';
+import HelpPage from '@/pages/HelpPage';
+import MainLayout from '@/components/layout/MainLayout';
 
 const router = createHashRouter([
   {
-    path: "/",
+    path: '/',
     loader: async () => {
       try {
         const result = await window.license.check();
+        console.log('라이센스 확인 결과:', result);
         if (result.success) {
-          return redirect("/app/dashboard");
+          return redirect('/app/dashboard');
         }
         return null;
       } catch (error) {
+        console.error('라이센스 확인 중 오류:', error);
         return null;
       }
     },
     element: <LicenseInputPage />,
   },
   {
-    path: "/app",
+    path: '/app',
     element: <MainLayout />,
     children: [
       {
-        path: "dashboard",
+        path: 'dashboard',
         element: <DashboardPage />,
       },
       {
-        path: "settings",
+        path: 'settings',
         element: <SettingsPage />,
       },
       {
-        path: "help",
+        path: 'help',
         element: <HelpPage />,
       },
     ],
