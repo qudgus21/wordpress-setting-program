@@ -1,4 +1,15 @@
+import React, { useState } from "react";
+
 const SettingsPage = () => {
+  const [awsAccessKey, setAwsAccessKey] = useState("");
+  const [awsSecretKey, setAwsSecretKey] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: AWS 자격 증명 저장 로직 추가
+    console.log("AWS 자격 증명 저장:", { awsAccessKey, awsSecretKey });
+  };
+
   return (
     <div className="flex h-screen">
       <div className="flex-1 p-8">
@@ -6,73 +17,52 @@ const SettingsPage = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-8">설정</h1>
 
           <div className="bg-white shadow rounded-lg divide-y divide-gray-200">
-            {/* 계정 설정 */}
+            {/* AWS 자격 증명 설정 */}
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900">계정 설정</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                AWS 자격 증명
+              </h3>
               <div className="mt-4 space-y-4">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
+                <form onSubmit={handleSubmit}>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label
+                      htmlFor="aws-access-key"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      AWS Access Key
+                    </label>
+                    <input
+                      type="text"
+                      id="aws-access-key"
+                      value={awsAccessKey}
+                      onChange={(e) => setAwsAccessKey(e.target.value)}
+                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
+                      placeholder="AKIAXXXXXXXXXXXXXXXX"
+                    />
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <label
+                      htmlFor="aws-secret-key"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      AWS Secret Key
+                    </label>
+                    <input
+                      type="password"
+                      id="aws-secret-key"
+                      value={awsSecretKey}
+                      onChange={(e) => setAwsSecretKey(e.target.value)}
+                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
+                      placeholder="••••••••••••••••••••••••••••••••"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-4 w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    이메일
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    비밀번호
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* 알림 설정 */}
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900">알림 설정</h3>
-              <div className="mt-4 space-y-4">
-                <div className="flex items-center">
-                  <input
-                    id="email-notifications"
-                    name="email-notifications"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <label
-                    htmlFor="email-notifications"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    이메일 알림 받기
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="yield-notifications"
-                    name="yield-notifications"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <label
-                    htmlFor="yield-notifications"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    수익률 알림 받기
-                  </label>
-                </div>
+                    AWS 자격 증명 저장
+                  </button>
+                </form>
               </div>
             </div>
 
