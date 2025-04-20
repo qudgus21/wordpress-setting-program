@@ -8,7 +8,7 @@ export default defineConfig({
   base: "./", // ✅ 추가: asset 경로를 상대경로로 설정, base는 빌드에서만 실행됨
   resolve: {
     alias: {
-      "@renderer": path.resolve(__dirname, "src/renderer"),
+      "@": path.resolve(__dirname, "./src/renderer"),
     },
   },
   build: {

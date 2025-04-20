@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import useThemeStore from "../store/themeStore";
 
 const SettingsPage = () => {
   const [awsAccessKey, setAwsAccessKey] = useState("");
   const [awsSecretKey, setAwsSecretKey] = useState("");
+  const { isDarkMode, toggleDarkMode } = useThemeStore();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -11,23 +13,49 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div
+      className={`flex h-screen ${
+        isDarkMode ? "dark bg-gray-900" : "bg-gray-100"
+      }`}
+    >
       <div className="flex-1 p-8">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">설정</h1>
+          <h1
+            className={`text-2xl font-bold mb-8 ${
+              isDarkMode ? "text-white" : "text-gray-900"
+            }`}
+          >
+            설정
+          </h1>
 
-          <div className="bg-white shadow rounded-lg divide-y divide-gray-200">
+          <div
+            className={`shadow rounded-lg divide-y ${
+              isDarkMode
+                ? "bg-gray-800 divide-gray-700"
+                : "bg-white divide-gray-200"
+            }`}
+          >
             {/* AWS 자격 증명 설정 */}
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3
+                className={`text-lg font-medium ${
+                  isDarkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
                 AWS 자격 증명
               </h3>
               <div className="mt-4 space-y-4">
                 <form onSubmit={handleSubmit}>
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div
+                    className={`p-4 rounded-lg ${
+                      isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                    }`}
+                  >
                     <label
                       htmlFor="aws-access-key"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className={`block text-sm font-medium mb-2 ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
                     >
                       AWS Access Key
                     </label>
@@ -36,14 +64,24 @@ const SettingsPage = () => {
                       id="aws-access-key"
                       value={awsAccessKey}
                       onChange={(e) => setAwsAccessKey(e.target.value)}
-                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
+                      className={`block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                        isDarkMode
+                          ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
                       placeholder="AKIAXXXXXXXXXXXXXXXX"
                     />
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div
+                    className={`p-4 rounded-lg ${
+                      isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                    }`}
+                  >
                     <label
                       htmlFor="aws-secret-key"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className={`block text-sm font-medium mb-2 ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
                     >
                       AWS Secret Key
                     </label>
@@ -52,7 +90,11 @@ const SettingsPage = () => {
                       id="aws-secret-key"
                       value={awsSecretKey}
                       onChange={(e) => setAwsSecretKey(e.target.value)}
-                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
+                      className={`block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 ${
+                        isDarkMode
+                          ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
                       placeholder="••••••••••••••••••••••••••••••••"
                     />
                   </div>
@@ -68,16 +110,24 @@ const SettingsPage = () => {
 
             {/* 테마 설정 */}
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900">테마 설정</h3>
+              <h3
+                className={`text-lg font-medium ${
+                  isDarkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
+                테마 설정
+              </h3>
               <div className="mt-4">
-                <select
-                  id="theme"
-                  name="theme"
-                  className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                <button
+                  onClick={toggleDarkMode}
+                  className={`w-full px-4 py-2 rounded-md ${
+                    isDarkMode
+                      ? "bg-gray-700 text-white hover:bg-gray-600"
+                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                  }`}
                 >
-                  <option>라이트 모드</option>
-                  <option>다크 모드</option>
-                </select>
+                  {isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
+                </button>
               </div>
             </div>
           </div>
