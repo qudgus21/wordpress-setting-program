@@ -1,9 +1,9 @@
 const getCredential = require('./getCredential');
-const setCredential = require('./setCredential');
+const saveCredential = require('./saveCredential');
 const getEc2Instances = require('./getEc2Instances');
 
 module.exports = {
   getCredential,
-  setCredential,
+  saveCredential,
   getEc2Instances,
 };
