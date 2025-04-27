@@ -9,6 +9,7 @@ const {
   DescribeVpcsCommand,
   DescribeSubnetsCommand,
 } = require('@aws-sdk/client-ec2');
+const getCredential = require('./getCredential');
 
 const getDefaultVpcAndSubnet = async ec2Client => {
   try {
@@ -45,8 +46,9 @@ const getDefaultVpcAndSubnet = async ec2Client => {
   }
 };
 
-const createEc2Instance = async credentials => {
+async function createEc2Instance() {
   try {
+    const credentials = await getCredential();
     const ec2Client = new EC2Client({
       region: 'ap-northeast-2',
       credentials: {
@@ -55,13 +57,10 @@ const createEc2Instance = async credentials => {
       },
     });
 
-    // 기본 VPC와 서브넷 조회
-    const { vpcId, subnetId } = await getDefaultVpcAndSubnet(ec2Client);
-
     // 1. 보안 그룹 생성
     const createSecurityGroupCommand = new CreateSecurityGroupCommand({
       GroupName: `wordpress-sg-${Date.now()}`,
-      Description: 'WordPress 보안 그룹',
+      Description: 'WordPress Security Group',
       VpcId: vpcId,
     });
 
@@ -72,25 +71,22 @@ const createEc2Instance = async credentials => {
     const ingressCommand = new AuthorizeSecurityGroupIngressCommand({
       GroupId: groupId,
       IpPermissions: [
-        // SSH (22)
-        {
-          IpProtocol: 'tcp',
-          FromPort: 22,
-          ToPort: 22,
-          IpRanges: [{ CidrIp: '0.0.0.0/0' }],
-        },
-        // HTTP (80)
         {
           IpProtocol: 'tcp',
           FromPort: 80,
           ToPort: 80,
           IpRanges: [{ CidrIp: '0.0.0.0/0' }],
         },
-        // HTTPS (443)
         {
           IpProtocol: 'tcp',
           FromPort: 443,
           ToPort: 443,
+          IpRanges: [{ CidrIp: '0.0.0.0/0' }],
+        },
+        {
+          IpProtocol: 'tcp',
+          FromPort: 22,
+          ToPort: 22,
           IpRanges: [{ CidrIp: '0.0.0.0/0' }],
         },
       ],
@@ -101,7 +97,7 @@ const createEc2Instance = async credentials => {
     // 2. EC2 인스턴스 생성
     const runInstancesCommand = new RunInstancesCommand({
       ImageId: 'ami-0c9c942bd7bf113a2', // Amazon Linux 2 AMI
-      InstanceType: 't2.micro', // 프리 티어
+      InstanceType: 't2.micro',
       MinCount: 1,
       MaxCount: 1,
       SecurityGroupIds: [groupId],
@@ -138,25 +134,19 @@ const createEc2Instance = async credentials => {
 
     await ec2Client.send(associateAddressCommand);
 
-    // 5. 인스턴스 정보 조회
-    const describeInstancesCommand = new DescribeInstancesCommand({
-      InstanceIds: [instanceId],
-    });
-
-    const describeResponse = await ec2Client.send(describeInstancesCommand);
-    const instance = describeResponse.Reservations[0].Instances[0];
-
     return {
-      instanceId: instance.InstanceId,
-      publicIp: elasticIpResponse.PublicIp,
-      privateIp: instance.PrivateIpAddress,
-      state: instance.State.Name,
-      securityGroupId: groupId,
-      tags: instance.Tags,
+      success: true,
+      message: 'EC2 인스턴스가 성공적으로 생성되었습니다.',
+      data: {
+        instanceId,
+        publicIp: elasticIpResponse.PublicIp,
+        securityGroupId: groupId,
+      },
     };
   } catch (error) {
-    throw new Error(`EC2 인스턴스 생성 중 오류 발생: ${error.message}`);
+    console.error('EC2 인스턴스 생성 중 오류:', error);
+    throw error;
   }
-};
+}
 
 module.exports = createEc2Instance;

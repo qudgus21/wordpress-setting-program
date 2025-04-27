@@ -73,9 +73,6 @@ ipcMain.handle('createEc2Instance', async () => {
       data: instance,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    throw error;
   }
 });
