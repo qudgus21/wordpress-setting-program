@@ -23,14 +23,13 @@ const SettingsPage = () => {
       });
 
       if (result.success) {
-        setSuccess(result.message);
+        setSuccess('AWS 자격 증명이 성공적으로 저장되었습니다.');
         setCredentials({
           accessKeyId: awsAccessKey,
           secretAccessKey: awsSecretKey,
         });
-        await loadInstances();
       } else {
-        setError(result.message);
+        setError(result.message || '자격 증명 저장 중 오류가 발생했습니다.');
       }
     } catch (err) {
       setError('자격 증명을 저장하는 중 오류가 발생했습니다.');
