@@ -1,5 +1,5 @@
 const { ipcMain } = require('electron');
-const { getCredential, setCredential, getEc2Instances, createEc2Instance } = require('@/core/aws');
+const { getCredential, saveCredential, getEc2Instances, createEc2Instance } = require('@/core/aws');
 const {
   EC2Client,
   DescribeInstancesCommand,
@@ -13,7 +13,7 @@ const {
 // AWS 자격 증명 저장 핸들러
 ipcMain.handle('saveCredential', async (event, credentials) => {
   try {
-    const result = await setCredential(credentials);
+    const result = await saveCredential(credentials);
     return {
       success: true,
       message: 'AWS 자격 증명이 성공적으로 저장되었습니다.',

@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.787.0",
+    "@aws-sdk/client-sts": "^3.797.0",
     "dotenv": "^16.5.0",
     "electron-store": "^8.1.0",
     "firebase-admin": "^11.11.1",
