@@ -20,10 +20,7 @@ ipcMain.handle('saveCredential', async (event, credentials) => {
       data: result,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    throw error;
   }
 });
 
@@ -37,10 +34,7 @@ ipcMain.handle('getCredential', async () => {
       data: result,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    throw error;
   }
 });
 
@@ -55,10 +49,7 @@ ipcMain.handle('getEc2Instances', async () => {
       data: instances,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    throw error;
   }
 });
 
