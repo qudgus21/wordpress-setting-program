@@ -11,7 +11,6 @@ const router = createHashRouter([
     loader: async () => {
       try {
         const result = await window.license.check();
-        console.log('라이센스 확인 결과:', result);
         if (result.success) {
           return redirect('/app/dashboard');
         }

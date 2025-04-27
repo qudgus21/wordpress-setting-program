@@ -1,6 +1,6 @@
 const { EC2Client, DescribeInstancesCommand } = require('@aws-sdk/client-ec2');
 
-const getInstances = async credentials => {
+const getEc2Instances = async credentials => {
   try {
     const ec2Client = new EC2Client({
       region: 'ap-northeast-2',
@@ -30,4 +30,4 @@ const getInstances = async credentials => {
   }
 };
 
-module.exports = getInstances;
+module.exports = getEc2Instances;

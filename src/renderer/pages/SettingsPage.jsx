@@ -17,7 +17,7 @@ const SettingsPage = () => {
     setSuccess('');
 
     try {
-      const result = await window.electron.aws.credentials.save({
+      const result = await window.aws.credentials.save({
         accessKeyId: awsAccessKey,
         secretAccessKey: awsSecretKey,
       });

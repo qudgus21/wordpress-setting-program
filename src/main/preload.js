@@ -10,7 +10,8 @@ contextBridge.exposeInMainWorld('aws', {
     get: () => ipcRenderer.invoke('getCredential'),
     save: credentials => ipcRenderer.invoke('saveCredential', credentials),
   },
-  instances: {
-    get: () => ipcRenderer.invoke('getInstances'),
+  ec2: {
+    get: () => ipcRenderer.invoke('getEc2Instances'),
+    create: () => ipcRenderer.invoke('createEc2Instance'),
   },
 });

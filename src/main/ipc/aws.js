@@ -1,6 +1,14 @@
 const { ipcMain } = require('electron');
-const { getCredential, setCredential, getInstances } = require('@/core/aws');
-const { EC2Client, DescribeInstancesCommand } = require('@aws-sdk/client-ec2');
+const { getCredential, setCredential, getEc2Instances, createEc2Instance } = require('@/core/aws');
+const {
+  EC2Client,
+  DescribeInstancesCommand,
+  RunInstancesCommand,
+  CreateSecurityGroupCommand,
+  AuthorizeSecurityGroupIngressCommand,
+  AllocateAddressCommand,
+  AssociateAddressCommand,
+} = require('@aws-sdk/client-ec2');
 
 // AWS 자격 증명 저장 핸들러
 ipcMain.handle('saveCredential', async (event, credentials) => {
@@ -37,14 +45,32 @@ ipcMain.handle('getCredential', async () => {
 });
 
 // EC2 인스턴스 목록 조회 핸들러
-ipcMain.handle('getInstances', async () => {
+ipcMain.handle('getEc2Instances', async () => {
   try {
     const credentials = await getCredential();
-    const instances = await getInstances(credentials);
+    const instances = await getEc2Instances(credentials);
     return {
       success: true,
       message: 'EC2 인스턴스 목록을 성공적으로 불러왔습니다.',
       data: instances,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+});
+
+// EC2 인스턴스 생성 핸들러
+ipcMain.handle('createEc2Instance', async () => {
+  try {
+    const credentials = await getCredential();
+    const instance = await createEc2Instance(credentials);
+    return {
+      success: true,
+      message: 'EC2 인스턴스가 성공적으로 생성되었습니다.',
+      data: instance,
     };
   } catch (error) {
     return {

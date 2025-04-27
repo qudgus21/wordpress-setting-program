@@ -14,7 +14,7 @@ const DashboardPage = () => {
   const loadInstances = async () => {
     try {
       setLoading(true);
-      const result = await window.aws.instances.get();
+      const result = await window.aws.ec2.get();
       if (result.success) {
         setInstances(result.data);
       }
