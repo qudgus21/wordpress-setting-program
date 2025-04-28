@@ -8,7 +8,12 @@ const {
   DescribeInstancesCommand,
   DescribeVpcsCommand,
   DescribeSubnetsCommand,
+  CreateTagsCommand,
+  CreateKeyPairCommand,
+  DescribeKeyPairsCommand,
 } = require('@aws-sdk/client-ec2');
+const fs = require('fs');
+const path = require('path');
 
 const getDefaultVpcAndSubnet = async ec2Client => {
   try {
@@ -53,14 +58,47 @@ const getDefaultVpcAndSubnet = async ec2Client => {
 };
 
 async function createEc2Instance(credentials) {
+  const ec2Client = new EC2Client({
+    region: 'ap-northeast-2',
+    credentials: {
+      accessKeyId: credentials.accessKeyId,
+      secretAccessKey: credentials.secretAccessKey,
+    },
+  });
+
   try {
-    const ec2Client = new EC2Client({
-      region: 'ap-northeast-2',
-      credentials: {
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-      },
-    });
+    // 키 페어 생성 또는 조회
+    const keyPairName = 'instance-keypair';
+    const keyPath = path.join(process.env.HOME, '.ssh', `${keyPairName}.pem`);
+
+    try {
+      const describeCommand = new DescribeKeyPairsCommand({
+        KeyNames: [keyPairName],
+      });
+      await ec2Client.send(describeCommand);
+      console.log('기존 키 페어를 사용합니다.');
+
+      // 키 파일이 없으면 경고 메시지 출력
+      if (!fs.existsSync(keyPath)) {
+        console.warn(
+          '경고: 키 파일이 로컬에 존재하지 않습니다. AWS 콘솔에서 키 페어를 다운로드하여 ~/.ssh/wordpress-keypair.pem에 저장해주세요.'
+        );
+      }
+    } catch (error) {
+      if (error.name === 'InvalidKeyPair.NotFound') {
+        const createCommand = new CreateKeyPairCommand({
+          KeyName: keyPairName,
+        });
+        const response = await ec2Client.send(createCommand);
+
+        // 프라이빗 키를 파일로 저장
+        fs.writeFileSync(keyPath, response.KeyMaterial);
+        fs.chmodSync(keyPath, 0o400); // 읽기 전용으로 권한 설정
+        console.log('새로운 키 페어를 생성하고 저장했습니다.');
+      } else {
+        throw error;
+      }
+    }
 
     // 기본 VPC와 서브넷 가져오기
     const { vpcId, subnetId } = await getDefaultVpcAndSubnet(ec2Client);
@@ -108,6 +146,7 @@ async function createEc2Instance(credentials) {
       InstanceType: 't2.micro',
       MinCount: 1,
       MaxCount: 1,
+      KeyName: keyPairName,
       SecurityGroupIds: [groupId],
       SubnetId: subnetId,
       TagSpecifications: [
