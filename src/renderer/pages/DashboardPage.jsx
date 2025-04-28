@@ -40,20 +40,44 @@ const DashboardPage = () => {
     try {
       setShowCreateModal(false);
       setIsCreating(true);
+      setError(null);
+
       const result = await window.aws.ec2.create();
+
       if (result.success) {
-        await loadInstances();
-        setIsCreating(false);
+        setInstances(prev => [...prev, result.data]);
       } else {
-        setIsCreating(false);
-        setError(result.message || '인스턴스 생성 중 오류가 발생했습니다.');
+        setError(result.error);
       }
     } catch (error) {
-      console.error('인스턴스 생성 중 오류:', error);
+      setError(error.message);
+    } finally {
       setIsCreating(false);
-      setError(error.message || '인스턴스 생성 중 오류가 발생했습니다.');
     }
   };
+
+  const LoadingSpinner = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div
+              className="absolute inset-2 border-4 border-blue-300 border-t-transparent rounded-full animate-spin"
+              style={{ animationDirection: 'reverse' }}
+            ></div>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">EC2 인스턴스 생성 중</h3>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+            보안 그룹 생성 → EC2 인스턴스 생성 → Elastic IP 할당 → IP 연결
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
@@ -71,41 +95,7 @@ const DashboardPage = () => {
             </button>
           </div>
 
-          {isCreating && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="animate-ping rounded-full h-8 w-8 bg-blue-500 opacity-75"></div>
-                  </div>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 mt-4 text-center">
-                  인스턴스 생성이 진행 중입니다.
-                  <br />
-                  완료까지 약 1-2분 정도 소요될 수 있습니다.
-                </p>
-                <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 w-full">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        ⚠️ 인스턴스 생성이 완료될 때까지 프로그램을 닫지 마세요!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {isCreating && <LoadingSpinner />}
 
           {error && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -139,7 +129,7 @@ const DashboardPage = () => {
           )}
 
           {showCreateModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
                 <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">인스턴스 생성</h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">새로운 EC2 인스턴스를 생성하시겠습니까?</p>
