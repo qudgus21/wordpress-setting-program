@@ -11,7 +11,7 @@ const {
 } = require('@aws-sdk/client-ec2');
 
 // AWS 자격 증명 저장 핸들러
-ipcMain.handle('saveCredential', async (event, credentials) => {
+ipcMain.handle('saveCredential', async credentials => {
   try {
     const result = await saveCredential(credentials);
     return {

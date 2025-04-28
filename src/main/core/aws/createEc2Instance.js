@@ -9,7 +9,6 @@ const {
   DescribeVpcsCommand,
   DescribeSubnetsCommand,
 } = require('@aws-sdk/client-ec2');
-const getCredential = require('./getCredential');
 
 const getDefaultVpcAndSubnet = async ec2Client => {
   try {
@@ -53,9 +52,8 @@ const getDefaultVpcAndSubnet = async ec2Client => {
   }
 };
 
-async function createEc2Instance() {
+async function createEc2Instance(credentials) {
   try {
-    const credentials = await getCredential();
     const ec2Client = new EC2Client({
       region: 'ap-northeast-2',
       credentials: {

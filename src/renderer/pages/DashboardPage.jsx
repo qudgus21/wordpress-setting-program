@@ -82,7 +82,7 @@ const DashboardPage = () => {
     setIsDeleting(true);
     setDeletingInstanceId(instanceToDelete);
     try {
-      await window.electron.aws.ec2.delete(instanceToDelete);
+      await window.aws.ec2.delete(instanceToDelete);
       await loadInstances();
       setError(null);
     } catch (error) {
