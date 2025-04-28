@@ -23,11 +23,11 @@ const getDefaultVpcAndSubnet = async ec2Client => {
       throw new Error('기본 VPC를 찾을 수 없습니다.');
     }
 
-    const defaultVpcId = vpcsResponse.Vpcs[0].VpcId;
+    const vpcId = vpcsResponse.Vpcs[0].VpcId;
 
     // 기본 VPC의 서브넷 조회
     const subnetsCommand = new DescribeSubnetsCommand({
-      Filters: [{ Name: 'vpc-id', Values: [defaultVpcId] }],
+      Filters: [{ Name: 'vpc-id', Values: [vpcId] }],
     });
     const subnetsResponse = await ec2Client.send(subnetsCommand);
 
@@ -35,12 +35,19 @@ const getDefaultVpcAndSubnet = async ec2Client => {
       throw new Error('기본 VPC에 서브넷이 없습니다.');
     }
 
-    const defaultSubnetId = subnetsResponse.Subnets[0].SubnetId;
+    // t2.micro를 지원하는 가용 영역(a 또는 c)의 서브넷 찾기
+    const supportedSubnet = subnetsResponse.Subnets.find(
+      subnet => subnet.AvailabilityZone === 'ap-northeast-2a' || subnet.AvailabilityZone === 'ap-northeast-2c'
+    );
 
-    return {
-      vpcId: defaultVpcId,
-      subnetId: defaultSubnetId,
-    };
+    if (!supportedSubnet) {
+      throw new Error('t2.micro를 지원하는 가용 영역의 서브넷을 찾을 수 없습니다.');
+    }
+
+    const subnetId = supportedSubnet.SubnetId;
+    console.log('선택된 서브넷의 가용 영역:', supportedSubnet.AvailabilityZone);
+
+    return { vpcId, subnetId };
   } catch (error) {
     throw new Error(`VPC/서브넷 조회 중 오류 발생: ${error.message}`);
   }
@@ -56,6 +63,9 @@ async function createEc2Instance() {
         secretAccessKey: credentials.secretAccessKey,
       },
     });
+
+    // 기본 VPC와 서브넷 가져오기
+    const { vpcId, subnetId } = await getDefaultVpcAndSubnet(ec2Client);
 
     // 1. 보안 그룹 생성
     const createSecurityGroupCommand = new CreateSecurityGroupCommand({
