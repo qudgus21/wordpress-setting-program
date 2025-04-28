@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useThemeStore, useAwsStore } from '@/store';
 import { Link } from 'react';
+import DeleteInstanceModal from '../components/DeleteInstanceModal';
 
 const DashboardPage = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
@@ -12,6 +13,10 @@ const DashboardPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingInstanceId, setDeletingInstanceId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [instanceToDelete, setInstanceToDelete] = useState(null);
 
   useEffect(() => {
     // 알림 권한 요청
@@ -65,6 +70,28 @@ const DashboardPage = () => {
       setError(error.message);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteInstance = async instanceId => {
+    setInstanceToDelete(instanceId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    setDeletingInstanceId(instanceToDelete);
+    try {
+      await window.electron.aws.ec2.delete(instanceToDelete);
+      await loadInstances();
+      setError(null);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsDeleting(false);
+      setDeletingInstanceId(null);
+      setShowDeleteModal(false);
+      setInstanceToDelete(null);
     }
   };
 
@@ -233,6 +260,13 @@ const DashboardPage = () => {
                         >
                           퍼블릭 IP
                         </th>
+                        <th
+                          className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
+                          }`}
+                        >
+                          작업
+                        </th>
                       </tr>
                     </thead>
                     <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
@@ -275,6 +309,17 @@ const DashboardPage = () => {
                             <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                               {instance.publicIp}
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button
+                                onClick={() => handleDeleteInstance(instance.id)}
+                                disabled={isDeleting && deletingInstanceId === instance.id}
+                                className={`${
+                                  isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                              >
+                                {isDeleting && deletingInstanceId === instance.id ? '삭제 중...' : '삭제'}
+                              </button>
+                            </td>
                           </tr>
                         ))}
                     </tbody>
@@ -294,6 +339,16 @@ const DashboardPage = () => {
           )}
         </div>
       </div>
+
+      <DeleteInstanceModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setInstanceToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

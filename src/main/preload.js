@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld('aws', {
   ec2: {
     get: () => ipcRenderer.invoke('getEc2Instances'),
     create: () => ipcRenderer.invoke('createEc2Instance'),
+    delete: instanceId => ipcRenderer.invoke('deleteEc2Instance', instanceId),
   },
 });
