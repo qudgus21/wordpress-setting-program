@@ -56,10 +56,12 @@ const DashboardPage = () => {
     setError(null);
     try {
       const result = await window.aws.ec2.create();
+      setIsCreating(false);
       setSuccessMessage(result.message);
       setShowSuccessModal(true);
       await loadInstances();
     } catch (error) {
+      setIsCreating(false);
       if (error.message.includes('AddressLimitExceeded')) {
         setError(
           'AWS 기본 탄력적 IP 할당 한도(5개)에 도달했습니다. 더 많은 인스턴스를 생성하려면 AWS 지원팀에 할당량 증가를 요청해야 합니다.'
@@ -67,8 +69,6 @@ const DashboardPage = () => {
       } else {
         setError(error.message);
       }
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -374,6 +374,85 @@ const DashboardPage = () => {
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
       />
+
+      {/* 인스턴스 생성 모달 */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">인스턴스 생성</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">새로운 EC2 인스턴스를 생성하시겠습니까?</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+              >
+                취소
+              </button>
+              <button onClick={handleCreateInstance} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                생성
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isCreating && <LoadingSpinner />}
+
+      {error && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414-1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">오류가 발생했습니다</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setError(null);
+                  setIsCreating(false);
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">생성 완료</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{successMessage}</p>
+            <div className="flex justify-end">
+              <button onClick={() => setShowSuccessModal(false)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
