@@ -198,6 +198,13 @@ const DashboardPage = () => {
                             isDarkMode ? 'text-gray-200' : 'text-gray-500'
                           }`}
                         >
+                          도메인
+                        </th>
+                        <th
+                          className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
+                          }`}
+                        >
                           작업
                         </th>
                       </tr>
@@ -228,6 +235,15 @@ const DashboardPage = () => {
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {instance.publicIp}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {instance.domains && instance.domains.length > 0 ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                {instance.domains.length}개
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">-</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button
