@@ -332,9 +332,6 @@ const DashboardPage = () => {
               <div className="text-center mb-4">
                 <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>인스턴스가 없습니다.</p>
               </div>
-              <button onClick={() => setShowCreateModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                인스턴스 추가
-              </button>
             </div>
           )}
         </div>
