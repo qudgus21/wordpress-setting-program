@@ -83,4 +83,4 @@ async function deleteEc2Instance(credentials, instanceId) {
   }
 }
 
-module.exports = { deleteEc2Instance };
+module.exports = deleteEc2Instance;

@@ -68,7 +68,7 @@ ipcMain.handle('createEc2Instance', async () => {
   }
 });
 
-ipcMain.handle('deleteEc2Instance', async instanceId => {
+ipcMain.handle('deleteEc2Instance', async (event, instanceId) => {
   try {
     const credentials = await getCredential();
     const result = await deleteEc2Instance(credentials, instanceId);

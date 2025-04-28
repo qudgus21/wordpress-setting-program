@@ -49,25 +49,21 @@ const DashboardPage = () => {
   };
 
   const handleCreateInstance = async () => {
+    setIsCreating(true);
+    setError(null);
     try {
-      setShowCreateModal(false);
-      setIsCreating(true);
-      setError(null);
-
       const result = await window.aws.ec2.create();
-
-      if (result.success) {
-        // 성공 메시지 설정
-        setSuccessMessage(`인스턴스가 성공적으로 생성되었습니다.`);
-        setShowSuccessModal(true);
-
-        // 리스트 새로고침
-        await loadInstances();
-      } else {
-        setError(result.error);
-      }
+      setSuccessMessage(result.message);
+      setShowSuccessModal(true);
+      await loadInstances();
     } catch (error) {
-      setError(error.message);
+      if (error.message.includes('AddressLimitExceeded')) {
+        setError(
+          'AWS 기본 탄력적 IP 할당 한도(5개)에 도달했습니다. 더 많은 인스턴스를 생성하려면 AWS 지원팀에 할당량 증가를 요청해야 합니다.'
+        );
+      } else {
+        setError(error.message);
+      }
     } finally {
       setIsCreating(false);
     }
