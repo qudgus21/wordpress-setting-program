@@ -30,17 +30,22 @@ async function deleteEc2Instance(credentials, instanceId) {
 
     // 2. 탄력적 IP 해제
     if (publicIp) {
-      const describeAddressesCommand = new DescribeAddressesCommand({
-        PublicIps: [publicIp],
-      });
-      const addressesResponse = await ec2Client.send(describeAddressesCommand);
-
-      if (addressesResponse.Addresses.length > 0) {
-        const allocationId = addressesResponse.Addresses[0].AllocationId;
-        const releaseAddressCommand = new ReleaseAddressCommand({
-          AllocationId: allocationId,
+      try {
+        const describeAddressesCommand = new DescribeAddressesCommand({
+          PublicIps: [publicIp],
         });
-        await ec2Client.send(releaseAddressCommand);
+        const addressesResponse = await ec2Client.send(describeAddressesCommand);
+
+        if (addressesResponse.Addresses && addressesResponse.Addresses.length > 0) {
+          const allocationId = addressesResponse.Addresses[0].AllocationId;
+          const releaseAddressCommand = new ReleaseAddressCommand({
+            AllocationId: allocationId,
+          });
+          await ec2Client.send(releaseAddressCommand);
+        }
+      } catch (error) {
+        // Elastic IP 관련 오류는 무시하고 계속 진행
+        console.warn(`탄력적 IP 해제 중 오류 발생: ${error.message}`);
       }
     }
 

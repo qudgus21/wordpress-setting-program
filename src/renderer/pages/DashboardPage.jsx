@@ -17,6 +17,8 @@ const DashboardPage = () => {
   const [deletingInstanceId, setDeletingInstanceId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [instanceToDelete, setInstanceToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     // 알림 권한 요청
@@ -49,6 +51,7 @@ const DashboardPage = () => {
   };
 
   const handleCreateInstance = async () => {
+    setShowCreateModal(false);
     setIsCreating(true);
     setError(null);
     try {
@@ -91,6 +94,18 @@ const DashboardPage = () => {
     }
   };
 
+  // 페이지네이션 관련 계산
+  const filteredInstances = instances.filter(instance => instance.state !== 'terminated');
+  const totalPages = Math.ceil(filteredInstances.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentInstances = filteredInstances.slice(startIndex, endIndex);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = page => {
+    setCurrentPage(page);
+  };
+
   const LoadingSpinner = () => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -130,84 +145,6 @@ const DashboardPage = () => {
             </button>
           </div>
 
-          {isCreating && <LoadingSpinner />}
-
-          {error && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
-                <div className="flex items-center mb-4">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">오류가 발생했습니다</h2>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => {
-                      setError(null);
-                      setIsCreating(false);
-                    }}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    확인
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showCreateModal && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
-                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">인스턴스 생성</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">새로운 EC2 인스턴스를 생성하시겠습니까?</p>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-                  >
-                    취소
-                  </button>
-                  <button onClick={handleCreateInstance} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    생성
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showSuccessModal && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
-                <div className="flex items-center mb-4">
-                  <div className="flex-shrink-0">
-                    <svg className="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">생성 완료</h2>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{successMessage}</p>
-                <div className="flex justify-end">
-                  <button onClick={() => setShowSuccessModal(false)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    확인
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {loading && !isCreating ? (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
@@ -220,7 +157,7 @@ const DashboardPage = () => {
                 <p className={`text-xl mt-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>로딩 중...</p>
               </div>
             </div>
-          ) : instances.length > 0 ? (
+          ) : filteredInstances.length > 0 ? (
             <div className="px-4 py-5 sm:p-6">
               <h3 className={`text-lg font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>EC2 인스턴스 목록</h3>
               <div className="mt-4">
@@ -266,62 +203,157 @@ const DashboardPage = () => {
                       </tr>
                     </thead>
                     <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
-                      {[...instances]
-                        .sort((a, b) => {
-                          // running 상태를 가장 위로
-                          if (a.state === 'running' && b.state !== 'running') return -1;
-                          if (a.state !== 'running' && b.state === 'running') return 1;
-                          // 그 다음은 pending 상태
-                          if (a.state === 'pending' && b.state !== 'pending') return -1;
-                          if (a.state !== 'pending' && b.state === 'pending') return 1;
-                          // 나머지는 이름순 정렬
-                          return a.name.localeCompare(b.name);
-                        })
-                        .map(instance => (
-                          <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
-                            <td
-                              className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                      {currentInstances.map(instance => (
+                        <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {instance.id}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {instance.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                instance.state === 'running'
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : instance.state === 'stopped'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                  : instance.state === 'pending'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              }`}
                             >
-                              {instance.id}
-                            </td>
-                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {instance.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  instance.state === 'running'
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                    : instance.state === 'stopped'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                    : instance.state === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                                }`}
-                              >
-                                {instance.state}
-                              </span>
-                            </td>
-                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {instance.publicIp}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <button
-                                onClick={() => handleDeleteInstance(instance.id)}
-                                disabled={isDeleting && deletingInstanceId === instance.id}
-                                className={`${
-                                  isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'
-                                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                              >
-                                {isDeleting && deletingInstanceId === instance.id ? '삭제 중...' : '삭제'}
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                              {instance.state}
+                            </span>
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {instance.publicIp}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <button
+                              onClick={() => handleDeleteInstance(instance.id)}
+                              disabled={isDeleting && deletingInstanceId === instance.id}
+                              className={`${
+                                isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {isDeleting && deletingInstanceId === instance.id ? '삭제 중...' : '삭제'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex-1 flex justify-between sm:hidden">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
+                        isDarkMode
+                          ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                          : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      이전
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`ml-3 relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
+                        isDarkMode
+                          ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                          : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      다음
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        총 <span className="font-medium">{filteredInstances.length}</span>개의 인스턴스
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className={`relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium ${
+                            isDarkMode
+                              ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                              : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span className="sr-only">이전</span>
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              page === currentPage
+                                ? `z-10 ${
+                                    isDarkMode ? 'bg-blue-600 border-blue-600 text-white' : 'bg-blue-50 border-blue-500 text-blue-600'
+                                  }`
+                                : `${
+                                    isDarkMode
+                                      ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                                  }`
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className={`relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium ${
+                            isDarkMode
+                              ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                              : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span className="sr-only">다음</span>
+                          <svg
+                            className="h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-8">
