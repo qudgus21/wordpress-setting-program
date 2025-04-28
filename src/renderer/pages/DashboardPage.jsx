@@ -236,34 +236,47 @@ const DashboardPage = () => {
                       </tr>
                     </thead>
                     <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
-                      {instances.map(instance => (
-                        <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {instance.id}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {instance.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                instance.state === 'running'
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : instance.state === 'stopped'
-                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                  : instance.state === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                              }`}
+                      {[...instances]
+                        .sort((a, b) => {
+                          // running 상태를 가장 위로
+                          if (a.state === 'running' && b.state !== 'running') return -1;
+                          if (a.state !== 'running' && b.state === 'running') return 1;
+                          // 그 다음은 pending 상태
+                          if (a.state === 'pending' && b.state !== 'pending') return -1;
+                          if (a.state !== 'pending' && b.state === 'pending') return 1;
+                          // 나머지는 이름순 정렬
+                          return a.name.localeCompare(b.name);
+                        })
+                        .map(instance => (
+                          <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
+                            <td
+                              className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
                             >
-                              {instance.state}
-                            </span>
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {instance.publicIp}
-                          </td>
-                        </tr>
-                      ))}
+                              {instance.id}
+                            </td>
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {instance.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  instance.state === 'running'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    : instance.state === 'stopped'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                    : instance.state === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                }`}
+                              >
+                                {instance.state}
+                              </span>
+                            </td>
+                            <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {instance.publicIp}
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
