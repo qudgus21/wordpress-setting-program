@@ -10,8 +10,15 @@ const DashboardPage = () => {
   const [error, setError] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
+    // 알림 권한 요청
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
     loadInstances();
   }, []);
 
@@ -45,7 +52,12 @@ const DashboardPage = () => {
       const result = await window.aws.ec2.create();
 
       if (result.success) {
-        setInstances(prev => [...prev, result.data]);
+        // 성공 메시지 설정
+        setSuccessMessage(`인스턴스가 성공적으로 생성되었습니다.`);
+        setShowSuccessModal(true);
+
+        // 리스트 새로고침
+        await loadInstances();
       } else {
         setError(result.error);
       }
@@ -148,6 +160,31 @@ const DashboardPage = () => {
             </div>
           )}
 
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">생성 완료</h2>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">{successMessage}</p>
+                <div className="flex justify-end">
+                  <button onClick={() => setShowSuccessModal(false)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    확인
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading && !isCreating ? (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
@@ -170,35 +207,28 @@ const DashboardPage = () => {
                       <tr>
                         <th
                           className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-                            isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
                           }`}
                         >
                           인스턴스 ID
                         </th>
                         <th
                           className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-                            isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
                           }`}
                         >
                           이름
                         </th>
                         <th
                           className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-                            isDarkMode ? 'text-gray-300' : 'text-gray-500'
-                          }`}
-                        >
-                          타입
-                        </th>
-                        <th
-                          className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-                            isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
                           }`}
                         >
                           상태
                         </th>
                         <th
                           className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-                            isDarkMode ? 'text-gray-300' : 'text-gray-500'
+                            isDarkMode ? 'text-gray-200' : 'text-gray-500'
                           }`}
                         >
                           퍼블릭 IP
@@ -207,18 +237,29 @@ const DashboardPage = () => {
                     </thead>
                     <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
                       {instances.map(instance => (
-                        <tr key={instance.id}>
-                          <td className={`px-6 py-4 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>{instance.id}</td>
-                          <td className={`px-6 py-4 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>
+                        <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {instance.id}
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {instance.name}
                           </td>
-                          <td className={`px-6 py-4 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>
-                            {instance.type}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                instance.state === 'running'
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : instance.state === 'stopped'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                  : instance.state === 'pending'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              }`}
+                            >
+                              {instance.state}
+                            </span>
                           </td>
-                          <td className={`px-6 py-4 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>
-                            {instance.status}
-                          </td>
-                          <td className={`px-6 py-4 whitespace-nowrap ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {instance.publicIp}
                           </td>
                         </tr>

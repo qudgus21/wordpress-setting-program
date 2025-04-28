@@ -13,7 +13,7 @@ const getEc2Instances = async credentials => {
     const command = new DescribeInstancesCommand({});
     const response = await ec2Client.send(command);
 
-    return response.Reservations.flatMap(reservation =>
+    const instances = response.Reservations.flatMap(reservation =>
       reservation.Instances.map(instance => ({
         id: instance.InstanceId,
         name: instance.Tags?.find(tag => tag.Key === 'Name')?.Value || 'N/A',
@@ -21,11 +21,12 @@ const getEc2Instances = async credentials => {
         state: instance.State.Name,
         publicIp: instance.PublicIpAddress || 'N/A',
         privateIp: instance.PrivateIpAddress || 'N/A',
-        launchTime: instance.LaunchTime,
       }))
     );
+
+    return instances;
   } catch (error) {
-    console.error('EC2 인스턴스 목록 조회 중 오류 발생:', error);
+    console.error('인스턴스 목록 조회 중 오류:', error);
     throw error;
   }
 };

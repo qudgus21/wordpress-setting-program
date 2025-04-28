@@ -128,20 +128,35 @@ async function createEc2Instance() {
     const instanceResponse = await ec2Client.send(runInstancesCommand);
     const instanceId = instanceResponse.Instances[0].InstanceId;
 
-    // 3. 탄력적 IP 할당
+    // 3. Elastic IP 할당 및 연결
     const allocateAddressCommand = new AllocateAddressCommand({
       Domain: 'vpc',
     });
+    const allocateResponse = await ec2Client.send(allocateAddressCommand);
+    const allocationId = allocateResponse.AllocationId;
 
-    const elasticIpResponse = await ec2Client.send(allocateAddressCommand);
-    const allocationId = elasticIpResponse.AllocationId;
+    // 인스턴스가 실행될 때까지 대기
+    let instanceState = 'pending';
+    while (instanceState === 'pending') {
+      const describeCommand = new DescribeInstancesCommand({
+        InstanceIds: [instanceId],
+      });
+      const describeResponse = await ec2Client.send(describeCommand);
+      instanceState = describeResponse.Reservations[0].Instances[0].State.Name;
 
-    // 4. 탄력적 IP 연결
+      if (instanceState === 'running') {
+        break;
+      }
+
+      // 5초 대기
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+
+    // Elastic IP 연결
     const associateAddressCommand = new AssociateAddressCommand({
       AllocationId: allocationId,
       InstanceId: instanceId,
     });
-
     await ec2Client.send(associateAddressCommand);
 
     return {
@@ -149,7 +164,7 @@ async function createEc2Instance() {
       message: 'EC2 인스턴스가 성공적으로 생성되었습니다.',
       data: {
         instanceId,
-        publicIp: elasticIpResponse.PublicIp,
+        publicIp: allocateResponse.PublicIp,
         securityGroupId: groupId,
       },
     };
