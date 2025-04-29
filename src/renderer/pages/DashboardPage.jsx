@@ -237,9 +237,9 @@ const DashboardPage = () => {
                             {instance.publicIp}
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {instance.domains && instance.domains.length > 0 ? (
+                            {instance.domainCount > 0 ? (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                {instance.domains.length}개
+                                {instance.domainCount}개
                               </span>
                             ) : (
                               <span className="text-gray-400 dark:text-gray-500">-</span>

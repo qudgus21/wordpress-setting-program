@@ -21,6 +21,8 @@ const getEc2Instances = async credentials => {
         state: instance.State.Name,
         publicIp: instance.PublicIpAddress || 'N/A',
         privateIp: instance.PrivateIpAddress || 'N/A',
+        keyName: instance.KeyName || 'instance-keypair',
+        imageId: instance.ImageId,
       }))
     );
 

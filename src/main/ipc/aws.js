@@ -1,5 +1,6 @@
 const { ipcMain } = require('electron');
-const { getCredential, saveCredential, getEc2Instances, createEc2Instance, deleteEc2Instance } = require('@/core/aws');
+const { getCredential, saveCredential, getEc2Instances, createEc2Instance, deleteEc2Instance, getDomainCounts } = require('@/core/aws');
+
 const {
   EC2Client,
   DescribeInstancesCommand,
@@ -43,10 +44,12 @@ ipcMain.handle('getEc2Instances', async () => {
   try {
     const credentials = await getCredential();
     const instances = await getEc2Instances(credentials);
+    const instancesWithDomainCount = await getDomainCounts(instances);
+
     return {
       success: true,
       message: 'EC2 인스턴스 목록을 성공적으로 불러왔습니다.',
-      data: instances,
+      data: instancesWithDomainCount,
     };
   } catch (error) {
     throw error;
