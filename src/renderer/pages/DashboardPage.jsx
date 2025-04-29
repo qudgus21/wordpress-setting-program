@@ -241,7 +241,23 @@ const DashboardPage = () => {
                                   : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                               }`}
                             >
-                              {instance.state}
+                              {instance.state === 'running'
+                                ? '실행중'
+                                : instance.state === 'stopped'
+                                ? '중지됨'
+                                : instance.state === 'pending'
+                                ? '대기중'
+                                : instance.state === 'shutting-down'
+                                ? '종료중'
+                                : instance.state === 'terminated'
+                                ? '종료됨'
+                                : instance.state === 'stopping'
+                                ? '중지중'
+                                : instance.state === 'rebooting'
+                                ? '재시작중'
+                                : instance.state === 'initializing'
+                                ? '초기화중'
+                                : instance.state}
                             </span>
                           </td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
