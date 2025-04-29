@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useThemeStore, useAwsStore } from '@/store';
-import { Link } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DeleteInstanceModal from '../components/DeleteInstanceModal';
 
 const DashboardPage = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
+  const navigate = useNavigate();
 
   const [instances, setInstances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -92,6 +93,10 @@ const DashboardPage = () => {
       setShowDeleteModal(false);
       setInstanceToDelete(null);
     }
+  };
+
+  const handleInstanceClick = instanceId => {
+    navigate(`/app/instance/${instanceId}`);
   };
 
   // 페이지네이션 관련 계산
@@ -211,7 +216,13 @@ const DashboardPage = () => {
                     </thead>
                     <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700 bg-gray-800' : 'divide-gray-200 bg-white'}`}>
                       {currentInstances.map(instance => (
-                        <tr key={instance.id} className="border-b border-gray-200 dark:border-gray-700">
+                        <tr
+                          key={instance.id}
+                          className={`${
+                            isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                          } cursor-pointer transition-colors duration-200`}
+                          onClick={() => navigate(`/app/instance/${instance.id}`, { state: { instance } })}
+                        >
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {instance.id}
                           </td>
@@ -245,7 +256,7 @@ const DashboardPage = () => {
                               <span className="text-gray-400 dark:text-gray-500">-</span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm" onClick={e => e.stopPropagation()}>
                             <button
                               onClick={() => handleDeleteInstance(instance.id)}
                               disabled={isDeleting && deletingInstanceId === instance.id}

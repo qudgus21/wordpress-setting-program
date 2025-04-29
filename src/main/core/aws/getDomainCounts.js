@@ -22,7 +22,7 @@ async function getDomainCount(instanceIp, keyName, imageId) {
   // 키 파일 존재 여부 확인
   if (!fs.existsSync(keyPath)) {
     console.log(`인스턴스 ${instanceIp}의 키 파일이 존재하지 않습니다: ${keyPath}`);
-    return 0;
+    return { count: 0, domains: [] };
   }
 
   // 키 파일 권한 확인 및 설정
@@ -50,11 +50,11 @@ async function getDomainCount(instanceIp, keyName, imageId) {
 
     if (!hasBegin || !hasEnd) {
       console.error(`인스턴스 ${instanceIp}의 키 파일이 올바른 형식이 아닙니다.`);
-      return 0;
+      return { count: 0, domains: [] };
     }
   } catch (error) {
     console.error(`인스턴스 ${instanceIp}의 키 파일 확인 중 오류:`, error);
-    return 0;
+    return { count: 0, domains: [] };
   }
 
   return new Promise(resolve => {
@@ -64,18 +64,18 @@ async function getDomainCount(instanceIp, keyName, imageId) {
     exec(checkNginxCommand, (error, stdout, stderr) => {
       if (error) {
         console.error(`인스턴스 ${instanceIp}의 Nginx 확인 중 오류:`, error);
-        resolve(0);
+        resolve({ count: 0, domains: [] });
         return;
       }
 
       if (stdout.includes('nginx not found')) {
         console.log(`인스턴스 ${instanceIp}에 Nginx가 설치되어 있지 않습니다.`);
-        resolve(0);
+        resolve({ count: 0, domains: [] });
         return;
       }
 
       // Nginx 설정 파일 확인
-      const command = `ssh -i ${keyPath} -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${username}@${instanceIp} "ls -1 /etc/nginx/sites-available/ 2>/dev/null | grep -v '^default$' | wc -l"`;
+      const command = `ssh -i ${keyPath} -o StrictHostKeyChecking=no -o ConnectTimeout=5 ${username}@${instanceIp} "ls -1 /etc/nginx/sites-available/ 2>/dev/null | grep -v '^default$'"`;
 
       exec(command, (error, stdout, stderr) => {
         if (error) {
@@ -88,28 +88,36 @@ async function getDomainCount(instanceIp, keyName, imageId) {
 
             // Ubuntu 인스턴스인 경우 사용자 이름을 강제로 ubuntu로 변경하여 재시도
             if (imageId.includes('ubuntu') || imageId.includes('ami-0')) {
-              const retryCommand = `ssh -i ${keyPath} -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${instanceIp} "ls -1 /etc/nginx/sites-available/ 2>/dev/null | grep -v '^default$' | wc -l"`;
+              const retryCommand = `ssh -i ${keyPath} -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${instanceIp} "ls -1 /etc/nginx/sites-available/ 2>/dev/null | grep -v '^default$'"`;
 
               exec(retryCommand, (retryError, retryStdout, retryStderr) => {
                 if (retryError) {
-                  console.log(`인스턴스 ${instanceIp}의 도메인 카운트 조회 실패`);
-                  resolve(0);
+                  console.log(`인스턴스 ${instanceIp}의 도메인 목록 조회 실패`);
+                  resolve({ count: 0, domains: [] });
                   return;
                 }
-                const count = parseInt(retryStdout.trim(), 10) || 0;
-                resolve(count);
+                const domains = retryStdout
+                  .trim()
+                  .split('\n')
+                  .filter(domain => domain);
+                console.log(`인스턴스 ${instanceIp}의 도메인 목록:`, domains);
+                resolve({ count: domains.length, domains });
               });
               return;
             }
           } else {
             console.error(`인스턴스 ${instanceIp}의 SSH 실행 중 오류:`, error);
           }
-          resolve(0);
+          resolve({ count: 0, domains: [] });
           return;
         }
 
-        const count = parseInt(stdout.trim(), 10) || 0;
-        resolve(count);
+        const domains = stdout
+          .trim()
+          .split('\n')
+          .filter(domain => domain);
+        console.log(`인스턴스 ${instanceIp}의 도메인 목록:`, domains);
+        resolve({ count: domains.length, domains });
       });
     });
   });
@@ -119,20 +127,31 @@ async function getDomainCounts(instances) {
   // running 상태이고 public IP가 있는 인스턴스만 필터링
   const runningInstances = instances.filter(instance => instance.state === 'running' && instance.publicIp !== 'N/A');
 
+  console.log(
+    '도메인 목록을 조회할 인스턴스:',
+    runningInstances.map(inst => ({ id: inst.id, ip: inst.publicIp }))
+  );
+
   // 병렬로 도메인 개수 조회
   const domainCounts = await Promise.all(
     runningInstances.map(async instance => {
       try {
-        const count = await getDomainCount(instance.publicIp, instance.keyName, instance.imageId);
+        const result = await getDomainCount(instance.publicIp, instance.keyName, instance.imageId);
+        console.log(`인스턴스 ${instance.id} (${instance.publicIp})의 도메인 정보:`, {
+          count: result.count,
+          domains: result.domains,
+        });
         return {
           ...instance,
-          domainCount: count,
+          domainCount: result.count,
+          domains: result.domains,
         };
       } catch (error) {
         console.error(`인스턴스 ${instance.publicIp}의 도메인 카운트 조회 중 오류:`, error);
         return {
           ...instance,
           domainCount: 0,
+          domains: [],
         };
       }
     })
@@ -140,11 +159,25 @@ async function getDomainCounts(instances) {
 
   // 도메인 개수가 추가된 인스턴스와 그렇지 않은 인스턴스 합치기
   const domainCountMap = new Map(domainCounts.map(instance => [instance.id, instance.domainCount]));
+  const domainsMap = new Map(domainCounts.map(instance => [instance.id, instance.domains]));
 
-  return instances.map(instance => ({
+  const result = instances.map(instance => ({
     ...instance,
     domainCount: domainCountMap.get(instance.id) || 0,
+    domains: domainsMap.get(instance.id) || [],
   }));
+
+  console.log(
+    '최종 도메인 정보:',
+    result.map(inst => ({
+      id: inst.id,
+      ip: inst.publicIp,
+      count: inst.domainCount,
+      domains: inst.domains,
+    }))
+  );
+
+  return result;
 }
 
 module.exports = getDomainCounts;

@@ -3,6 +3,7 @@ import LicenseInputPage from '@/pages/LicenseInputPage';
 import DashboardPage from '@/pages/DashboardPage';
 import SettingsPage from '@/pages/SettingsPage';
 import HelpPage from '@/pages/HelpPage';
+import InstanceDetailPage from '@/pages/InstanceDetailPage';
 import MainLayout from '@/components/layout/MainLayout';
 
 const router = createHashRouter([
@@ -29,6 +30,10 @@ const router = createHashRouter([
       {
         path: 'dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: 'instance/:instanceId',
+        element: <InstanceDetailPage />,
       },
       {
         path: 'settings',
