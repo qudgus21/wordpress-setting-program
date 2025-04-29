@@ -124,112 +124,131 @@ const InstanceDetailPage = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
-              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>인스턴스 정보</h2>
-              <div className="space-y-6">
-                <div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>상태</p>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      instance.state === 'running'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : instance.state === 'stopped'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                    }`}
-                  >
-                    {instance.state}
-                  </span>
-                </div>
-                <div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>인스턴스 타입</p>
-                  <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.type}</p>
-                </div>
-                <div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>퍼블릭 IP</p>
-                  <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.publicIp}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>블로그 목록</h2>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    isDarkMode ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
-                  }`}
-                >
-                  {instance.domains?.length || 0}개
-                </span>
-              </div>
-              {instance.domains?.length > 0 ? (
-                <div className="space-y-4">
-                  {instance.domains.map(domain => (
-                    <div
-                      key={domain}
-                      className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} flex justify-between items-center`}
-                    >
+          <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-8">
+                <div className="grid grid-cols-1 gap-6">
+                  <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
+                    <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>인스턴스 정보</h2>
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{domain}</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>상태</p>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            instance.state === 'running'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : instance.state === 'stopped'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                          }`}
+                        >
+                          {instance.state}
+                        </span>
                       </div>
-                      <div className="flex space-x-2">
-                        <a
-                          href={`http://${domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`p-2 rounded-full ${
-                            isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
-                          } transition-colors duration-200`}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </a>
-                        <button
-                          className={`p-2 rounded-full ${
-                            isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
-                          } transition-colors duration-200`}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
+                      <div>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>인스턴스 타입</p>
+                        <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.type}</p>
+                      </div>
+                      <div>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>퍼블릭 IP</p>
+                        <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.publicIp}</p>
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>블로그 목록</h2>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          isDarkMode ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
+                        }`}
+                      >
+                        {instance.domains?.length || 0}개
+                      </span>
+                    </div>
+                    {instance.domains?.length > 0 ? (
+                      <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                        {instance.domains.map(domain => (
+                          <div
+                            key={domain}
+                            className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} flex justify-between items-center`}
+                          >
+                            <div>
+                              <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{domain}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <a
+                                href={`http://${domain}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`p-2 rounded-full ${
+                                  isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                                } transition-colors duration-200`}
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              </a>
+                              <button
+                                onClick={() => handleDeleteDomain(domain)}
+                                className={`p-2 rounded-full ${
+                                  isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                                } transition-colors duration-200`}
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <svg
+                          className="mx-auto h-12 w-12 mb-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                          />
+                        </svg>
+                        <p className="text-sm">새로운 블로그를 시작해보세요!</p>
+                        <p className="text-xs mt-1">당신의 이야기를 세상에 알려보세요</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <svg
-                    className="mx-auto h-12 w-12 mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="text-sm">아직 블로그가 없습니다.</p>
-                  <p className="text-xs mt-1">새로운 블로그를 추가해보세요!</p>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
