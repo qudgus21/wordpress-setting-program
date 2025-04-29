@@ -57,11 +57,29 @@ const DashboardPage = () => {
     setError(null);
     try {
       const result = await window.aws.ec2.create();
+      console.log('인스턴스 생성 결과:', result);
+
+      if (!result.success || !result.data) {
+        throw new Error(result.message || '인스턴스 생성에 실패했습니다.');
+      }
+
       setIsCreating(false);
       setSuccessMessage(result.message);
       setShowSuccessModal(true);
-      await loadInstances();
+
+      // 새로 생성된 인스턴스를 기존 리스트에 추가
+      const newInstance = {
+        id: result.data.instanceId,
+        name: result.data.name,
+        state: 'pending',
+        publicIp: result.data.publicIp,
+        type: 't2.micro',
+        domainCount: 0,
+      };
+      console.log('새로 생성된 인스턴스 데이터:', newInstance);
+      setInstances(prevInstances => [...prevInstances, newInstance]);
     } catch (error) {
+      console.error('인스턴스 생성 중 오류:', error);
       setIsCreating(false);
       if (error.message.includes('AddressLimitExceeded')) {
         setError(

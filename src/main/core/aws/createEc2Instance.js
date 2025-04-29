@@ -197,13 +197,10 @@ async function createEc2Instance(credentials) {
     await ec2Client.send(associateAddressCommand);
 
     return {
-      success: true,
-      message: '인스턴스가 성공적으로 생성되었습니다.',
-      data: {
-        instanceId,
-        publicIp: allocateResponse.PublicIp,
-        securityGroupId: groupId,
-      },
+      instanceId,
+      publicIp: allocateResponse.PublicIp,
+      securityGroupId: groupId,
+      name: `instance-${Date.now()}`,
     };
   } catch (error) {
     console.error('EC2 인스턴스 생성 중 오류:', error);
