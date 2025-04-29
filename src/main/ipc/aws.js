@@ -63,7 +63,7 @@ ipcMain.handle('createEc2Instance', async () => {
     const instance = await createEc2Instance(credentials);
     return {
       success: true,
-      message: 'EC2 인스턴스가 성공적으로 생성되었습니다.',
+      message: '인스턴스가 성공적으로 생성되었습니다.',
       data: instance,
     };
   } catch (error) {

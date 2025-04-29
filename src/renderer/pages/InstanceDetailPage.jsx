@@ -18,6 +18,8 @@ const InstanceDetailPage = () => {
   useEffect(() => {
     if (!location.state?.instance) {
       loadInstance();
+    } else {
+      setInstance(location.state.instance);
     }
   }, [instanceId, location.state]);
 
@@ -126,48 +128,27 @@ const InstanceDetailPage = () => {
             <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
               <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>인스턴스 정보</h2>
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>상태</p>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        instance.state === 'running'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : instance.state === 'stopped'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                      }`}
-                    >
-                      {instance.state}
-                    </span>
-                  </div>
-                  <div>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>인스턴스 타입</p>
-                    <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.type}</p>
-                  </div>
+                <div>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>상태</p>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      instance.state === 'running'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : instance.state === 'stopped'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}
+                  >
+                    {instance.state}
+                  </span>
+                </div>
+                <div>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>인스턴스 타입</p>
+                  <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.type}</p>
                 </div>
                 <div>
                   <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>퍼블릭 IP</p>
                   <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{instance.publicIp}</p>
-                </div>
-                <div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>생성 시간</p>
-                  <p className={isDarkMode ? 'text-white' : 'text-gray-900'}>{new Date(instance.launchTime).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>보안 그룹</p>
-                  <div className="mt-1 space-y-1">
-                    {instance.securityGroups?.map(sg => (
-                      <span
-                        key={sg.GroupId}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          isDarkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {sg.GroupName}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
@@ -192,7 +173,6 @@ const InstanceDetailPage = () => {
                     >
                       <div>
                         <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{domain}</p>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{instance.publicIp}</p>
                       </div>
                       <div className="flex space-x-2">
                         <a

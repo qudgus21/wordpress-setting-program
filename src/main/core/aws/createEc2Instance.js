@@ -155,7 +155,7 @@ async function createEc2Instance(credentials) {
           Tags: [
             {
               Key: 'Name',
-              Value: `wordpress-${Date.now()}`,
+              Value: `instance-${Date.now()}`,
             },
           ],
         },
@@ -198,7 +198,7 @@ async function createEc2Instance(credentials) {
 
     return {
       success: true,
-      message: 'EC2 인스턴스가 성공적으로 생성되었습니다.',
+      message: '인스턴스가 성공적으로 생성되었습니다.',
       data: {
         instanceId,
         publicIp: allocateResponse.PublicIp,
