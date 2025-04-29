@@ -100,7 +100,7 @@ const DashboardPage = () => {
   };
 
   // 페이지네이션 관련 계산
-  const filteredInstances = instances.filter(instance => instance.state !== 'terminated');
+  const filteredInstances = instances.filter(instance => instance.state !== 'terminated' && instance.state !== 'shutting-down');
   const totalPages = Math.ceil(filteredInstances.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
