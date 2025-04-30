@@ -72,7 +72,7 @@ async function initializeEc2Instance(instanceId, credentials) {
       host: instance.PublicIpAddress,
       username: 'ubuntu',
       privateKey: keyContent,
-      debug: console.log, // 디버그 모드 활성화
+      debug: false, // 디버그 모드 비활성화
     });
     console.log('SSH 연결 성공');
 
@@ -80,9 +80,32 @@ async function initializeEc2Instance(instanceId, credentials) {
     const scriptPath = '/tmp/initialize.sh';
     const scriptContent = `
 #!/bin/bash
-echo "초기화 시작..."
-sleep 10
-echo "초기화 완료!"
+
+echo "✅ Ubuntu EC2 초기 세팅 시작..."
+
+# 시스템 패키지 업데이트
+sudo apt update && sudo apt upgrade -y
+
+# Nginx, PHP, MySQL 설치
+sudo apt install nginx mysql-server php-fpm php-mysql unzip curl -y
+sudo apt install php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip -y
+
+# Certbot 설치 (SSL 발급용)
+sudo apt install certbot python3-certbot-nginx -y
+
+# Nginx 시작 및 부팅 시 자동 실행 설정
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# MySQL root 비밀번호 설정
+echo "✅ MySQL root 비밀번호 설정 중..."
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'wordpress423!'; FLUSH PRIVILEGES;"
+echo "✅ MySQL 비밀번호 설정 완료!"
+
+echo "🎉 초기 세팅 완료!"
+echo "- Nginx, PHP, MySQL, Certbot 설치 완료"
+echo "- MySQL root 비밀번호: wordpress423!"
+echo "- 이제 워드프레스 사이트를 추가할 수 있어요 🚀"
 `;
 
     console.log('초기화 스크립트 생성 중...');
@@ -90,9 +113,14 @@ echo "초기화 완료!"
     await ssh.execCommand(`chmod +x ${scriptPath}`);
 
     console.log('초기화 스크립트 실행 중...');
-    const { stdout, stderr } = await ssh.execCommand(`${scriptPath}`);
+    const { stdout, stderr } = await ssh.execCommand(`bash ${scriptPath}`);
     console.log('스크립트 출력:', stdout);
     if (stderr) console.error('스크립트 오류:', stderr);
+
+    // 스크립트 파일 삭제
+    console.log('초기화 스크립트 파일 삭제 중...');
+    await ssh.execCommand(`rm ${scriptPath}`);
+    console.log('초기화 스크립트 파일 삭제 완료');
 
     // 4. SSH 연결 종료
     ssh.dispose();
