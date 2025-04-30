@@ -81,7 +81,7 @@ async function createEc2Instance(credentials) {
       // 키 파일이 없으면 경고 메시지 출력
       if (!fs.existsSync(keyPath)) {
         console.warn(
-          '경고: 키 파일이 로컬에 존재하지 않습니다. AWS 콘솔에서 키 페어를 다운로드하여 ~/.ssh/wordpress-keypair.pem에 저장해주세요.'
+          '경고: 키 파일이 로컬에 존재하지 않습니다. AWS 콘솔에서 키 페어를 다운로드하여 ~/.ssh/instance-keypair.pem에 저장해주세요.'
         );
       }
     } catch (error) {

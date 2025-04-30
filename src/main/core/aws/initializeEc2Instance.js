@@ -49,21 +49,30 @@ async function initializeEc2Instance(instanceId, credentials) {
     // 2. SSH 연결
     const ssh = new NodeSSH();
     const keyPath = path.join(process.env.HOME, '.ssh', 'instance-keypair.pem');
+    console.log('키 파일 경로:', keyPath);
+    console.log('HOME 환경 변수:', process.env.HOME);
+    console.log('키 파일 존재 여부:', fs.existsSync(keyPath));
+
+    // 키 파일 내용 확인
+    const keyContent = fs.readFileSync(keyPath, 'utf8');
+    console.log('키 파일 내용 시작:', keyContent.substring(0, 50));
+    console.log('키 파일 내용 끝:', keyContent.substring(keyContent.length - 50));
 
     if (!fs.existsSync(keyPath)) {
-      throw new Error('SSH 키 파일을 찾을 수 없습니다. AWS 콘솔에서 키 페어를 다운로드하여 ~/.ssh/instance-keypair.pem에 저장해주세요.');
+      throw new Error(`SSH 키 파일을 찾을 수 없습니다: ${keyPath}\n키 파일이 올바른 위치에 있는지 확인해주세요.`);
     }
 
     console.log('SSH 연결 정보:');
     console.log('- 호스트:', instance.PublicIpAddress);
-    console.log('- 사용자:', 'ec2-user');
+    console.log('- 사용자:', 'ubuntu');
     console.log('- 키 파일:', keyPath);
     console.log('SSH 연결 시도 중...');
 
     await ssh.connect({
       host: instance.PublicIpAddress,
-      username: 'ec2-user',
-      privateKey: fs.readFileSync(keyPath, 'utf8'),
+      username: 'ubuntu',
+      privateKey: keyContent,
+      debug: console.log, // 디버그 모드 활성화
     });
     console.log('SSH 연결 성공');
 
