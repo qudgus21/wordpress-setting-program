@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useThemeStore, useAwsStore } from '@/store';
 import { useNavigate } from 'react-router-dom';
 import DeleteInstanceModal from '../components/DeleteInstanceModal';
+import { toast } from 'react-hot-toast';
 
 const DashboardPage = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
@@ -111,18 +112,23 @@ const DashboardPage = () => {
   };
 
   const confirmDelete = async () => {
-    setIsDeleting(true);
-    setDeletingInstanceId(instanceToDelete);
     try {
-      await window.aws.ec2.delete(instanceToDelete);
-      await loadInstances();
-      setError(null);
+      setIsDeleting(true);
+      setShowDeleteModal(false);
+
+      const result = await window.aws.ec2.delete(instanceToDelete);
+      if (result.success) {
+        // 삭제된 인스턴스를 화면에서 바로 제거
+        setInstances(prevInstances => prevInstances.filter(instance => instance.id !== instanceToDelete));
+        toast.success('인스턴스가 삭제되었습니다.');
+      } else {
+        toast.error(result.message || '인스턴스 삭제 중 오류가 발생했습니다.');
+      }
     } catch (error) {
-      setError(error.message);
+      console.error('인스턴스 삭제 중 오류:', error);
+      toast.error('인스턴스 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsDeleting(false);
-      setDeletingInstanceId(null);
-      setShowDeleteModal(false);
       setInstanceToDelete(null);
     }
   };
@@ -525,6 +531,19 @@ const DashboardPage = () => {
                 확인
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 삭제 중 모달 */}
+      {isDeleting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <div className="flex items-center justify-center mb-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+            <h2 className="text-xl font-semibold text-center mb-2">인스턴스 삭제 중</h2>
+            <p className="text-gray-600 text-center">인스턴스가 삭제되고 있습니다. 잠시만 기다려주세요...</p>
           </div>
         </div>
       )}
