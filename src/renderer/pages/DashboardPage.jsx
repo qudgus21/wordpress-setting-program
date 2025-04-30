@@ -19,6 +19,7 @@ const DashboardPage = () => {
   const [deletingInstanceId, setDeletingInstanceId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [instanceToDelete, setInstanceToDelete] = useState(null);
+  const [showInitializingModal, setShowInitializingModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -259,7 +260,13 @@ const DashboardPage = () => {
                           className={`${
                             isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
                           } cursor-pointer transition-colors duration-200`}
-                          onClick={() => navigate(`/app/instance/${instance.id}`, { state: { instance } })}
+                          onClick={() => {
+                            if (instance.state === 'initializing') {
+                              setShowInitializingModal(true);
+                            } else {
+                              navigate(`/app/instance/${instance.id}`, { state: { instance } });
+                            }
+                          }}
                         >
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {instance.id}
@@ -528,6 +535,25 @@ const DashboardPage = () => {
             <p className="text-gray-600 dark:text-gray-300 mb-4">{successMessage}</p>
             <div className="flex justify-end">
               <button onClick={() => setShowSuccessModal(false)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 초기화 중 알림 모달 */}
+      {showInitializingModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-[500px]">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">인스턴스 초기화 중</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">인스턴스가 초기화 중입니다. 초기화에는 약 5분 정도 소요됩니다.</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">초기화가 완료된 후에 상세 페이지를 확인할 수 있습니다.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowInitializingModal(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
                 확인
               </button>
             </div>
