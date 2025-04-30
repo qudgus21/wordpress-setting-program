@@ -66,6 +66,27 @@ const InstanceDetailPage = () => {
     }
   };
 
+  const getStateText = state => {
+    switch (state) {
+      case 'running':
+        return '실행중';
+      case 'initializing':
+        return '초기화중';
+      case 'stopped':
+        return '중지됨';
+      case 'stopping':
+        return '중지중';
+      case 'pending':
+        return '대기중';
+      case 'shutting-down':
+        return '종료중';
+      case 'terminated':
+        return '종료됨';
+      default:
+        return state;
+    }
+  };
+
   if (loading) {
     return (
       <div className={`flex h-screen items-center justify-center ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
@@ -142,7 +163,7 @@ const InstanceDetailPage = () => {
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                           }`}
                         >
-                          {instance.state}
+                          {getStateText(instance.state)}
                         </span>
                       </div>
                       <div>
