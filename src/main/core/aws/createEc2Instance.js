@@ -93,7 +93,7 @@ async function createEc2Instance(credentials) {
 
         // 프라이빗 키를 파일로 저장
         fs.writeFileSync(keyPath, response.KeyMaterial);
-        fs.chmodSync(keyPath, 0o400); // 읽기 전용으로 권한 설정
+        fs.chmodSync(keyPath, 0o600); // 읽고 쓰기 전용
         console.log('새로운 키 페어를 생성하고 저장했습니다.');
       } else {
         throw error;

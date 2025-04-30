@@ -71,13 +71,27 @@ const DashboardPage = () => {
       const newInstance = {
         id: result.data.instanceId,
         name: result.data.name,
-        state: 'pending',
+        state: 'initializing',
         publicIp: result.data.publicIp,
         type: 't2.micro',
         domainCount: 0,
       };
       console.log('새로 생성된 인스턴스 데이터:', newInstance);
       setInstances(prevInstances => [...prevInstances, newInstance]);
+
+      // 인스턴스 초기화
+      try {
+        const initResult = await window.aws.ec2.initialize(result.data.instanceId);
+        if (initResult.success) {
+          setInstances(prevInstances =>
+            prevInstances.map(instance =>
+              instance.id === result.data.instanceId ? { ...instance, state: initResult.data.state } : instance
+            )
+          );
+        }
+      } catch (error) {
+        console.error('인스턴스 초기화 중 오류:', error);
+      }
     } catch (error) {
       console.error('인스턴스 생성 중 오류:', error);
       setIsCreating(false);

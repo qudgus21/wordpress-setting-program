@@ -1,5 +1,13 @@
 const { ipcMain } = require('electron');
-const { getCredential, saveCredential, getEc2Instances, createEc2Instance, deleteEc2Instance, getDomainCounts } = require('@/core/aws');
+const {
+  getCredential,
+  saveCredential,
+  getEc2Instances,
+  createEc2Instance,
+  deleteEc2Instance,
+  getDomainCounts,
+  initializeEc2Instance,
+} = require('@/core/aws');
 
 const {
   EC2Client,
@@ -76,6 +84,20 @@ ipcMain.handle('deleteEc2Instance', async (event, instanceId) => {
     const credentials = await getCredential();
     const result = await deleteEc2Instance(credentials, instanceId);
     return { success: true, data: result };
+  } catch (error) {
+    throw error;
+  }
+});
+
+ipcMain.handle('initializeEc2Instance', async (event, instanceId) => {
+  try {
+    const credentials = await getCredential();
+    const instance = await initializeEc2Instance(instanceId, credentials);
+    return {
+      success: true,
+      message: '인스턴스 초기화가 완료되었습니다.',
+      data: instance,
+    };
   } catch (error) {
     throw error;
   }

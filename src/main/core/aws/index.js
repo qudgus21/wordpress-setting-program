@@ -4,6 +4,7 @@ const getEc2Instances = require('./getEc2Instances');
 const createEc2Instance = require('./createEc2Instance');
 const deleteEc2Instance = require('./deleteEc2Instance');
 const getDomainCounts = require('./getDomainCounts');
+const initializeEc2Instance = require('./initializeEc2Instance');
 
 module.exports = {
   getCredential,
@@ -12,4 +13,5 @@ module.exports = {
   createEc2Instance,
   deleteEc2Instance,
   getDomainCounts,
+  initializeEc2Instance,
 };
