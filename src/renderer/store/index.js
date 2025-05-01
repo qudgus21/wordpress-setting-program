@@ -1,9 +1,10 @@
-import { create } from "zustand";
-import useThemeStore from "./themeStore";
+import { create } from 'zustand';
+import useThemeStore from './themeStore';
+import useInstanceStore from './instanceStore';
 
-const useAwsStore = create((set) => ({
+const useAwsStore = create(set => ({
   credentials: null,
-  setCredentials: (credentials) => set({ credentials }),
+  setCredentials: credentials => set({ credentials }),
 }));
 
-export { useThemeStore, useAwsStore };
+export { useThemeStore, useAwsStore, useInstanceStore };

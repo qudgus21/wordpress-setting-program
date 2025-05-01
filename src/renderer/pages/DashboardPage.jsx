@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useThemeStore, useAwsStore } from '@/store';
+import { useThemeStore, useInstanceStore } from '@/store';
 import { useNavigate } from 'react-router-dom';
 import DeleteInstanceModal from '../components/DeleteInstanceModal';
 import { toast } from 'react-hot-toast';
 
 const DashboardPage = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
+  const { instances, setInstances, updateInstance, isLoaded, setIsLoaded } = useInstanceStore();
   const navigate = useNavigate();
 
-  const [instances, setInstances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -29,7 +29,10 @@ const DashboardPage = () => {
       Notification.requestPermission();
     }
 
-    loadInstances();
+    if (!isLoaded) {
+      loadInstances();
+      setIsLoaded(true);
+    }
   }, []);
 
   const loadInstances = async () => {
@@ -79,17 +82,14 @@ const DashboardPage = () => {
         domainCount: 0,
       };
       console.log('새로 생성된 인스턴스 데이터:', newInstance);
-      setInstances(prevInstances => [...prevInstances, newInstance]);
+      setInstances([...instances, newInstance]);
 
       // 인스턴스 초기화
       try {
         const initResult = await window.aws.ec2.initialize(result.data.instanceId);
         if (initResult.success) {
-          setInstances(prevInstances =>
-            prevInstances.map(instance =>
-              instance.id === result.data.instanceId ? { ...instance, state: initResult.data.state } : instance
-            )
-          );
+          // 초기화된 인스턴스의 state만 업데이트
+          updateInstance(result.data.instanceId, { state: initResult.data.state });
         }
       } catch (error) {
         console.error('인스턴스 초기화 중 오류:', error);
@@ -120,7 +120,7 @@ const DashboardPage = () => {
       const result = await window.aws.ec2.delete(instanceToDelete);
       if (result.success) {
         // 삭제된 인스턴스를 화면에서 바로 제거
-        setInstances(prevInstances => prevInstances.filter(instance => instance.id !== instanceToDelete));
+        setInstances(instances.filter(instance => instance.id !== instanceToDelete));
         toast.success('인스턴스가 삭제되었습니다.');
       } else {
         toast.error(result.message || '인스턴스 삭제 중 오류가 발생했습니다.');
