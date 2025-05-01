@@ -14,6 +14,8 @@ const InstanceDetailPage = () => {
   const [showAddBlogModal, setShowAddBlogModal] = useState(false);
   const [domain, setDomain] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!location.state?.instance) {
@@ -47,20 +49,22 @@ const InstanceDetailPage = () => {
 
   const handleAddBlog = async () => {
     if (!domain) {
-      setError('도메인을 입력해주세요.');
+      setErrorMessage('도메인을 입력해주세요.');
+      setShowErrorModal(true);
       return;
     }
 
     setIsCreating(true);
     setError(null);
     try {
-      // TODO: 워드프레스 설치 로직 구현
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 임시로 2초 대기
+      const result = await window.aws.blog.create({ instance, domain });
       setShowAddBlogModal(false);
       setDomain('');
       await loadInstance();
     } catch (error) {
-      setError(error.message || '블로그 생성 중 오류가 발생했습니다.');
+      const cleanErrorMessage = error.message.replace(/^Error invoking remote method 'createBlog': Error: /, '');
+      setErrorMessage(cleanErrorMessage);
+      setShowErrorModal(true);
     } finally {
       setIsCreating(false);
     }
@@ -329,6 +333,38 @@ const InstanceDetailPage = () => {
                 <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 text-center">워드프레스 설치 → 데이터베이스 설정 → 도메인 설정</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 에러 모달 */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-[500px]">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414-1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">오류가 발생했습니다</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">{errorMessage}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setShowErrorModal(false);
+                  setErrorMessage('');
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                확인
+              </button>
             </div>
           </div>
         </div>

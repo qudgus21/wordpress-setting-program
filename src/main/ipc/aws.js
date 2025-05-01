@@ -7,6 +7,7 @@ const {
   deleteEc2Instance,
   getDomainCounts,
   initializeEc2Instance,
+  checkValidDomain,
 } = require('@/core/aws');
 
 const {
@@ -97,6 +98,23 @@ ipcMain.handle('initializeEc2Instance', async (event, instanceId) => {
       success: true,
       message: '인스턴스 초기화가 완료되었습니다.',
       data: instance,
+    };
+  } catch (error) {
+    throw error;
+  }
+});
+
+ipcMain.handle('createBlog', async (event, { instance, domain }) => {
+  try {
+    const credentials = await getCredential();
+    await checkValidDomain(domain, instance.publicIp);
+
+    //todo: create
+
+    return {
+      success: true,
+      message: '블로그가 성공적으로 생성되었습니다.',
+      data: { instanceId: instance.id, domain },
     };
   } catch (error) {
     throw error;

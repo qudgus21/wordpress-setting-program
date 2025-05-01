@@ -16,4 +16,7 @@ contextBridge.exposeInMainWorld('aws', {
     delete: instanceId => ipcRenderer.invoke('deleteEc2Instance', instanceId),
     initialize: instanceId => ipcRenderer.invoke('initializeEc2Instance', instanceId),
   },
+  blog: {
+    create: ({ instance, domain }) => ipcRenderer.invoke('createBlog', { instance, domain }),
+  },
 });
