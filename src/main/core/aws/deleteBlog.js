@@ -14,57 +14,84 @@ async function deleteBlog(credentials, instance, domain) {
 
     const keyContent = fs.readFileSync(keyPath, 'utf8');
 
-    // SSH 연결
-    await ssh.connect({
-      host: instance.publicIp,
-      username: 'ubuntu',
-      privateKey: keyContent,
-      debug: false,
-    });
+    // SSH 연결 시도 (최대 3번)
+    let connected = false;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 5000; // 5초
+
+    while (!connected && retryCount < maxRetries) {
+      try {
+        console.log(`SSH 연결 시도 중... (${retryCount + 1}/${maxRetries})`);
+        await ssh.connect({
+          host: instance.publicIp,
+          username: 'ubuntu',
+          privateKey: keyContent,
+          debug: false,
+          readyTimeout: 30000, // 30초 타임아웃
+          keepaliveInterval: 10000, // 10초마다 keepalive 패킷 전송
+          keepaliveCountMax: 3, // 3번의 keepalive 실패 후 연결 종료
+        });
+        connected = true;
+        console.log('SSH 연결 성공');
+      } catch (error) {
+        retryCount++;
+        console.error(`SSH 연결 실패 (시도 ${retryCount}/${maxRetries}):`, error.message);
+        if (retryCount < maxRetries) {
+          console.log(`${retryDelay / 1000}초 후 재시도...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        } else {
+          throw new Error(`SSH 연결 실패: ${error.message}`);
+        }
+      }
+    }
 
     // 삭제 스크립트 실행
     const script = `#!/bin/bash
 
-# MySQL 명령어 실행 함수
-mysql_exec() {
-    local query="\$1"
-    MYSQL_PWD="\${DB_ROOT_PASS}" mysql -u root -e "\${query}" 2>/dev/null
-}
-
-# 도메인 설정
+# 변수 정의
 DOMAIN="${domain}"
-SLUG=\${DOMAIN//./_}
-DB_NAME="wp_\${SLUG}"
-WEB_ROOT="/var/www/\${DOMAIN}"
-NGINX_CONF="/etc/nginx/sites-available/\${SLUG}"
+WEB_ROOT="/var/www/${domain}"
+DB_NAME="wp_${domain.replace(/\./g, '_')}"
 
-# MySQL root 비밀번호 (정적으로 설정)
-DB_ROOT_PASS="wordpress423!"
-
-# 1. 웹 루트 디렉토리 삭제
+# 웹 루트 디렉토리 삭제
 if [ -d "\${WEB_ROOT}" ]; then
-    echo "🗑️  웹 루트 디렉토리 삭제 중..."
-    sudo chown -R ubuntu:ubuntu "\${WEB_ROOT}"
-    sudo rm -rf "\${WEB_ROOT}"
+    sudo rm -rf \${WEB_ROOT}
+    echo "웹 루트 디렉토리 삭제 완료: \${WEB_ROOT}"
 fi
 
-# 2. Nginx 설정 삭제
-if [ -f "\${NGINX_CONF}" ]; then
-    echo "🗑️  Nginx 설정 삭제 중..."
-    sudo rm -f "\${NGINX_CONF}"
-    sudo rm -f "/etc/nginx/sites-enabled/\${SLUG}"
-    sudo nginx -t && sudo systemctl reload nginx
+# Nginx 설정 삭제
+if [ -f "/etc/nginx/sites-enabled/\${DOMAIN}" ]; then
+    sudo rm -f /etc/nginx/sites-enabled/\${DOMAIN}
+    echo "Nginx 설정 링크 삭제 완료"
 fi
 
-# 3. 데이터베이스 삭제
-echo "🗑️  데이터베이스 삭제 중..."
-mysql_exec "DROP DATABASE IF EXISTS \${DB_NAME};"
+if [ -f "/etc/nginx/sites-available/\${DOMAIN}" ]; then
+    sudo rm -f /etc/nginx/sites-available/\${DOMAIN}
+    echo "Nginx 설정 파일 삭제 완료"
+fi
 
-echo "✅ 블로그 삭제 완료!"
+# SSL 인증서 삭제
+if [ -d "/etc/letsencrypt/live/\${DOMAIN}" ]; then
+    sudo certbot delete --cert-name \${DOMAIN} --non-interactive
+    echo "SSL 인증서 삭제 완료"
+fi
+
+# 데이터베이스 삭제
+if sudo mysql -e "SHOW DATABASES LIKE '\${DB_NAME}';" | grep -q "\${DB_NAME}"; then
+    sudo mysql -e "DROP DATABASE IF EXISTS \${DB_NAME};"
+    echo "데이터베이스 삭제 완료: \${DB_NAME}"
+fi
+
+# Nginx 재시작
+sudo nginx -t && sudo systemctl restart nginx
+echo "Nginx 재시작 완료"
+
+echo "모든 리소스 삭제가 완료되었습니다."
 `;
 
     // 스크립트를 임시 파일로 저장하고 실행
-    console.log('스크립트 실행 시작...');
+    console.log('삭제 스크립트 실행 시작...');
     const result = await ssh.execCommand(`
       echo '${script}' > /tmp/delete-wordpress.sh && \
       chmod +x /tmp/delete-wordpress.sh && \
@@ -78,7 +105,7 @@ echo "✅ 블로그 삭제 완료!"
     });
 
     if (result.code !== 0) {
-      throw new Error(`블로그 삭제 실패: ${result.stderr || result.stdout}`);
+      throw new Error(`워드프레스 삭제 실패: ${result.stderr || result.stdout}`);
     }
 
     // SSH 연결 종료

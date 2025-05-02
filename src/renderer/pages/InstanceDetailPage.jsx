@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useThemeStore } from '@/store';
+import { useThemeStore, useInstanceStore } from '@/store';
 import { toast } from 'react-hot-toast';
 
 const InstanceDetailPage = () => {
@@ -8,9 +8,11 @@ const InstanceDetailPage = () => {
   const { instanceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { instances, updateInstance } = useInstanceStore();
+  const storeInstance = instances.find(inst => inst.id === instanceId);
 
-  const [instance, setInstance] = useState(location.state?.instance || null);
-  const [loading, setLoading] = useState(!location.state?.instance);
+  const [instance, setInstance] = useState(storeInstance || null);
+  const [loading, setLoading] = useState(!storeInstance);
   const [error, setError] = useState(null);
   const [showAddBlogModal, setShowAddBlogModal] = useState(false);
   const [domain, setDomain] = useState('');
@@ -21,34 +23,14 @@ const InstanceDetailPage = () => {
   const [domainToDelete, setDomainToDelete] = useState(null);
 
   useEffect(() => {
-    if (!location.state?.instance) {
-      loadInstance();
+    if (!storeInstance) {
+      setError('인스턴스를 찾을 수 없습니다.');
+      setLoading(false);
     } else {
-      setInstance(location.state.instance);
-    }
-  }, [instanceId, location.state]);
-
-  const loadInstance = async () => {
-    try {
-      setLoading(true);
-      const result = await window.aws.ec2.get();
-      if (result.success) {
-        const foundInstance = result.data.find(inst => inst.id === instanceId);
-        if (foundInstance) {
-          setInstance(foundInstance);
-        } else {
-          setError('인스턴스를 찾을 수 없습니다.');
-        }
-      } else {
-        setError(result.message || '인스턴스 정보를 불러오는 중 오류가 발생했습니다.');
-      }
-    } catch (error) {
-      console.error('인스턴스 정보 조회 중 오류:', error);
-      setError('인스턴스 정보를 불러오는 중 오류가 발생했습니다.');
-    } finally {
+      setInstance(storeInstance);
       setLoading(false);
     }
-  };
+  }, [instanceId, storeInstance]);
 
   const handleAddBlog = async () => {
     if (!domain) {
@@ -63,7 +45,16 @@ const InstanceDetailPage = () => {
       const result = await window.aws.blog.create({ instance, domain });
       setShowAddBlogModal(false);
       setDomain('');
-      await loadInstance();
+
+      // instanceStore 업데이트
+      const updatedInstance = {
+        ...instance,
+        domains: [...(instance.domains || []), domain],
+      };
+      updateInstance(updatedInstance);
+      setInstance(updatedInstance);
+
+      toast.success('블로그가 성공적으로 생성되었습니다.');
     } catch (error) {
       const cleanErrorMessage = error.message.replace(/^Error invoking remote method 'createBlog': Error: /, '');
       setErrorMessage(cleanErrorMessage);
@@ -86,13 +77,13 @@ const InstanceDetailPage = () => {
         domain: domainToDelete,
       });
 
-      // store에서 도메인 제거
+      // instanceStore 업데이트
       const updatedInstance = {
         ...instance,
         domains: instance.domains.filter(d => d !== domainToDelete),
       };
-      setInstance(updatedInstance);
       updateInstance(updatedInstance);
+      setInstance(updatedInstance);
 
       toast.success('블로그가 성공적으로 삭제되었습니다.');
     } catch (error) {
