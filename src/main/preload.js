@@ -18,5 +18,6 @@ contextBridge.exposeInMainWorld('aws', {
   },
   blog: {
     create: ({ instance, domain }) => ipcRenderer.invoke('createBlog', { instance, domain }),
+    delete: ({ instance, domain }) => ipcRenderer.invoke('deleteBlog', { instance, domain }),
   },
 });

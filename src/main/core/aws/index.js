@@ -7,6 +7,7 @@ const getDomainCounts = require('./getDomainCounts');
 const initializeEc2Instance = require('./initializeEc2Instance');
 const checkValidDomain = require('./checkValidDomain');
 const createBlog = require('./createBlog');
+const deleteBlog = require('./deleteBlog');
 
 module.exports = {
   getCredential,
@@ -18,4 +19,5 @@ module.exports = {
   initializeEc2Instance,
   checkValidDomain,
   createBlog,
+  deleteBlog,
 };

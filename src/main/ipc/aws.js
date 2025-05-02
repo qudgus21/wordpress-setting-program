@@ -9,6 +9,7 @@ const {
   initializeEc2Instance,
   checkValidDomain,
   createBlog,
+  deleteBlog,
 } = require('@/core/aws');
 
 const {
@@ -109,13 +110,26 @@ ipcMain.handle('createBlog', async (event, { instance, domain }) => {
   try {
     const credentials = await getCredential();
     await checkValidDomain(domain, instance.publicIp);
-
-    // 블로그 생성 로직
-    const result = await createBlog(credentials, instance, domain);
+    await createBlog(credentials, instance, domain);
 
     return {
       success: true,
       message: '블로그가 성공적으로 생성되었습니다.',
+      data: { instanceId: instance.id, domain },
+    };
+  } catch (error) {
+    throw error;
+  }
+});
+
+ipcMain.handle('deleteBlog', async (event, { instance, domain }) => {
+  try {
+    const credentials = await getCredential();
+    await deleteBlog(credentials, instance, domain);
+
+    return {
+      success: true,
+      message: '블로그가 삭제되었습니다.',
       data: { instanceId: instance.id, domain },
     };
   } catch (error) {
