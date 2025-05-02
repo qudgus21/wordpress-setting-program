@@ -3,3 +3,4 @@ serviceAccountKey.json
 config.json
 dist/
 .aws
+scripts.txt
