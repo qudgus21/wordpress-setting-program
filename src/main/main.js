@@ -37,7 +37,7 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools(); //개발자 도구 열기
+    // mainWindow.webContents.openDevTools(); //개발자 도구 열기
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
