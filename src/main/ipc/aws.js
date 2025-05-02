@@ -8,6 +8,7 @@ const {
   getDomainCounts,
   initializeEc2Instance,
   checkValidDomain,
+  createBlog,
 } = require('@/core/aws');
 
 const {
@@ -109,7 +110,8 @@ ipcMain.handle('createBlog', async (event, { instance, domain }) => {
     const credentials = await getCredential();
     await checkValidDomain(domain, instance.publicIp);
 
-    //todo: create
+    // 블로그 생성 로직
+    const result = await createBlog(credentials, instance, domain);
 
     return {
       success: true,

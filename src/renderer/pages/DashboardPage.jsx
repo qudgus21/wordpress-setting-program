@@ -198,7 +198,7 @@ const DashboardPage = () => {
                     <div className="animate-ping rounded-full h-8 w-8 bg-blue-500 opacity-75"></div>
                   </div>
                 </div>
-                <p className={`text-xl mt-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>로딩 중...</p>
+                <p className={`text-xl mt-4 ${isDarkMode ? 'text-white' : 'text-white'}`}>로딩 중...</p>
               </div>
             </div>
           ) : filteredInstances.length > 0 ? (
