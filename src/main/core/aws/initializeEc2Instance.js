@@ -72,7 +72,10 @@ async function initializeEc2Instance(instanceId, credentials) {
       host: instance.PublicIpAddress,
       username: 'ubuntu',
       privateKey: keyContent,
-      debug: false, // 디버그 모드 비활성화
+      debug: false,
+      readyTimeout: 30000, // 30초 타임아웃
+      keepaliveInterval: 10000, // 10초마다 keepalive 패킷 전송
+      keepaliveCountMax: 3, // 3번의 keepalive 실패 후 연결 종료
     });
     console.log('SSH 연결 성공');
 

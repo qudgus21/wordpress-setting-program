@@ -21,6 +21,8 @@ const InstanceDetailPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [domainToDelete, setDomainToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
 
   useEffect(() => {
     if (!storeInstance) {
@@ -50,8 +52,9 @@ const InstanceDetailPage = () => {
       const updatedInstance = {
         ...instance,
         domains: [...(instance.domains || []), domain],
+        domainCount: (instance.domainCount || 0) + 1,
       };
-      updateInstance(updatedInstance);
+      updateInstance(instance.id, updatedInstance);
       setInstance(updatedInstance);
 
       toast.success('블로그가 성공적으로 생성되었습니다.');
@@ -71,7 +74,7 @@ const InstanceDetailPage = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      setLoading(true);
+      setIsDeleting(true);
       await window.aws.blog.delete({
         instance,
         domain: domainToDelete,
@@ -81,17 +84,18 @@ const InstanceDetailPage = () => {
       const updatedInstance = {
         ...instance,
         domains: instance.domains.filter(d => d !== domainToDelete),
+        domainCount: (instance.domainCount || 0) - 1,
       };
-      updateInstance(updatedInstance);
+      updateInstance(instance.id, updatedInstance);
       setInstance(updatedInstance);
 
-      toast.success('블로그가 성공적으로 삭제되었습니다.');
+      setShowDeleteConfirmModal(false);
+      setShowDeleteSuccessModal(true);
     } catch (error) {
       console.error('블로그 삭제 중 오류 발생:', error);
       toast.error(error.message);
     } finally {
-      setLoading(false);
-      setShowDeleteConfirmModal(false);
+      setIsDeleting(false);
       setDomainToDelete(null);
     }
   };
@@ -412,7 +416,7 @@ const InstanceDetailPage = () => {
               </div>
               <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">블로그 삭제</h2>
             </div>
-            {loading ? (
+            {isDeleting ? (
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative w-16 h-16">
                   <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -449,6 +453,35 @@ const InstanceDetailPage = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 삭제 완료 모달 */}
+      {showDeleteSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-96">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h2 className="ml-3 text-xl font-bold text-gray-900 dark:text-white">삭제 완료</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">블로그가 성공적으로 삭제되었습니다.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowDeleteSuccessModal(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}

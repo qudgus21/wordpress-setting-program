@@ -71,16 +71,12 @@ if [ -f "/etc/nginx/sites-available/\${DOMAIN}" ]; then
     echo "Nginx 설정 파일 삭제 완료"
 fi
 
-# SSL 인증서 삭제
-if [ -d "/etc/letsencrypt/live/\${DOMAIN}" ]; then
-    sudo certbot delete --cert-name \${DOMAIN} --non-interactive
-    echo "SSL 인증서 삭제 완료"
-fi
-
-# 데이터베이스 삭제
-if sudo mysql -e "SHOW DATABASES LIKE '\${DB_NAME}';" | grep -q "\${DB_NAME}"; then
-    sudo mysql -e "DROP DATABASE IF EXISTS \${DB_NAME};"
+# DB 삭제
+if sudo mysql -u root -p'wordpress423!' -e "SHOW DATABASES LIKE '\${DB_NAME}';" | grep -q "\${DB_NAME}"; then
+    sudo mysql -u root -p'wordpress423!' -e "DROP DATABASE IF EXISTS \${DB_NAME};"
     echo "데이터베이스 삭제 완료: \${DB_NAME}"
+else
+    echo "데이터베이스 없음: \${DB_NAME}"
 fi
 
 # Nginx 재시작

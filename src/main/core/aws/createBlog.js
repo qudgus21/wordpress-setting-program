@@ -114,8 +114,14 @@ sudo ln -sf /etc/nginx/sites-available/\${DOMAIN} /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl restart nginx
 
-# SSL 인증서 발급
-sudo certbot --nginx -d \${DOMAIN} -d www.\${DOMAIN} --non-interactive --agree-tos --email \${EMAIL} --redirect
+# 인증서가 없을 경우에만 certbot 발급
+if ! sudo certbot certificates | grep -q "Certificate Name: \${DOMAIN}"; then
+  echo "📌 인증서가 없으므로 새로 발급합니다."
+  sudo certbot --nginx --force-renewal -d \${DOMAIN} -d www.\${DOMAIN} --non-interactive --agree-tos --email \${EMAIL} --redirect
+else
+  echo "✅ 기존 인증서가 이미 존재하므로 발급 생략합니다."
+fi
+
 
 # PHP-FPM 재시작
 sudo systemctl restart php8.1-fpm
