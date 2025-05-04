@@ -112,15 +112,41 @@ EOF
 
 sudo ln -sf /etc/nginx/sites-available/\${DOMAIN} /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t && sudo systemctl restart nginx
 
-# 인증서가 없을 경우에만 certbot 발급
-if ! sudo certbot certificates | grep -q "Certificate Name: \${DOMAIN}"; then
+if ! sudo certbot certificates | grep -q "Domains: \${DOMAIN} www.\${DOMAIN}"; then
   echo "📌 인증서가 없으므로 새로 발급합니다."
   sudo certbot --nginx --force-renewal -d \${DOMAIN} -d www.\${DOMAIN} --non-interactive --agree-tos --email \${EMAIL} --redirect
 else
-  echo "✅ 기존 인증서가 이미 존재하므로 발급 생략합니다."
+  echo "✅ 기존 인증서가 존재합니다. SSL 설정을 Nginx에 삽입합니다."
+cat << 'EOF' | sudo tee /etc/nginx/sites-available/\${DOMAIN}
+server {
+    listen 80;
+    listen 443 ssl;
+
+    server_name \${DOMAIN} www.\${DOMAIN};
+    root \${WEB_ROOT};
+    index index.php index.html index.htm;
+
+
+    ssl_certificate /etc/letsencrypt/live/\${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/\${DOMAIN}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        try_files \\$uri \\$uri/ /index.php?\\$args;
+    }
+
+    location ~ \\.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php-fpm.sock;
+    }
+  }
+EOF
 fi
+
+# nginx 재시작
+sudo nginx -t && sudo systemctl restart nginx
 
 
 # PHP-FPM 재시작
